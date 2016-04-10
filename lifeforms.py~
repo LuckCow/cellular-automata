@@ -1,0 +1,23 @@
+class lifeforms():
+    """
+    Common lifeforms to place
+    """
+    constString = 1009
+    species = {'glider': frozenset({(0,0),(0,1),(1,0),(2,1),(0,2)}),
+               'LWSS':frozenset({(0,1),(0,4),(1,0),(2,0),(2,4),(3,0),(3,1),(3,2),(3,3)})}
+    directions = {'Up':0, 'Down':1, 'Left':2, 'Right':3}
+    def __init__(self):
+        pass
+        
+
+    def getLifeformSet(self, lf, row, col, rowOffset, colOffset, flipDir):
+        translatedSet = set()
+        for coordPair in self.species[lf]:
+            x = coordPair[1] + col + colOffset
+            y = coordPair[0] + row + rowOffset
+            translatedSet.add((y,x))
+        return self.flipSet(translatedSet, flipDir)
+
+    def flipSet(self, transSet, flipDir):
+        #if flipDir = 
+        return transSet #TODO: add flipping

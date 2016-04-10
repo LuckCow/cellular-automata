@@ -6,13 +6,6 @@ Time: 1:27pm
 Completed initial functionality: 3:30pm (GUI, generation)
 Completed full base functionality: 5:30pm (Timer)
 
-4/1/2016
-I implimented storing life as a set of coordinates to allow for better scalability.
-Only cells adjacent to living cells need to be considered instead of all NxN cells in 2D space
-
-Python version 4.8.4
-PyQt version 4.8.7 - Documentation: http://pyqt.sourceforge.net/Docs/PyQt4/classes.html
-
 Rules
 
     Any live cell with fewer than two live neighbours dies, as if caused by under-population.
@@ -23,9 +16,9 @@ Rules
 
 Features:
 GUI
-Infinite board with generation of both rendered and nonrendered life
+small Fixed board or Zoomable
 Pause/Varying speed of animation
-Can edit state in pause and while running
+Can edit state in pause
 
 Display:
 Board
@@ -33,21 +26,12 @@ Generation Number
 Speed of animation
 
 TODO:
+Implement larger board with panning/zooming
 Implement preset structure / copy pasting structures (lifeforms)
-Implement faster panning
-Show generation number
-
-Known Bugs:
-Timer slider gives weird console error:
-(python3:7461): Gtk-CRITICAL **: IA__gtk_widget_get_direction: assertion 'GTK_IS_WIDGET (widget)' failed
-   ^does not seem to affect anything
-
-Using Timer sliders takes focus away from grid (arrow keys move timer slider instead of panning)
 """
 
 from PyQt4 import Qt
 import sys
-from lifeforms import lifeforms
 
 class mainWindow(Qt.QMainWindow):
     """
@@ -70,7 +54,7 @@ class mainWindow(Qt.QMainWindow):
         #Restart icon and function
         restart = Qt.QAction('Reset', self)
         restart.setShortcut('Ctrl+N')
-        restart.triggered.connect(self.resetGame)
+        restart.triggered.connect(self.gol.resetGame)
         '''
         #Grid layout
         self.gridContainer = Qt.QWidget()
@@ -90,64 +74,19 @@ class mainWindow(Qt.QMainWindow):
         self.timerSpeed = 1000
         timerBut = Qt.QPushButton("Start/Stop", self)
         timerBut.clicked.connect(self.toggleTimer)
-
-        modes = {"Draw":self.gol.mouseDrawMode, "Erase":self.gol.mouseEraseMode,
-                 "Place":self.gol.mousePlaceMode}
-        self.mouseModeButtons = Qt.QButtonGroup()
-        self.mouseModeButtons.setExclusive(True)
-        for m in modes:
-            but = Qt.QPushButton(m, self)
-            but.setCheckable(True)
-            but.clicked.connect(self.setMouseMode)
-            self.mouseModeButtons.addButton(but, modes[m])
-        self.mouseModeButtons.button(0).setChecked(True)
         
         self.toolbar = self.addToolBar('Tooooooooools')
         self.toolbar.addAction(restart)
         self.toolbar.addWidget(sld)
         self.toolbar.addWidget(timerBut)
-        vWidget = Qt.QWidget()
-        vbox = Qt.QVBoxLayout()
-        for b in range(3):
-            vbox.addWidget(self.mouseModeButtons.button(b))
-        vbox.setSpacing(0)
-        vWidget.setLayout(vbox)
-        self.toolbar.addWidget(vWidget)
-
-        lifeformMenu = Qt.QMenu('Lifeforms')
-        for l in self.gol.lf.species:
-            act = Qt.QAction(l, lifeformMenu)
-            act.triggered.connect(self.setLifeform)
-            lifeformMenu.addAction(act)
-        self.lfBut = Qt.QPushButton('LifeForm')
-        self.lfBut.setMenu(lifeformMenu)
-        self.toolbar.addWidget(self.lfBut)
-
-        self.dial = Qt.QDial()
-        self.dial.setRange(0,3)
-        self.dial.setValue(1)
-        self.toolbar.addWidget(self.dial)
         
         self.resize(1800,900)
         self.setWindowTitle('Welcome to Conway')
         self.show()
 
-    def setLifeformDirection(self):
-        self.gol.flipDir = self.dial.value()
-
-    def setLifeform(self):
-        sender = self.sender()
-        self.lfBut.setText(sender.text())
-        self.gol.lifeform = sender.text()
-        
-    def setMouseMode(self):
-        self.gol.mouseMode = self.mouseModeButtons.checkedId()
-
     def changeTimerSpeed(self, val):
+        print(val)
         self.timerSpeed = 1000 / (val + 1)
-        if self.timer.isActive():
-            self.stopTimer()
-            self.startTimer()
 
     def toggleTimer(self):
         if self.timer.isActive():
@@ -162,50 +101,33 @@ class mainWindow(Qt.QMainWindow):
 
     def stopTimer(self):
         self.timer.stop()
-
-    def resetGame(self):
-        self.stopTimer()
-        self.gol.resetGame()
         
         
 class GameOfLife(Qt.QWidget):
-    mouseDrawMode = 0
-    mouseEraseMode = 1
-    mousePlaceMode = 2
-
-    lf = lifeforms()
-    lifeform = 'glider'
-    flipDir = 1
-    
     def __init__(self):
         super(GameOfLife, self).__init__()
-        self.mouseMode = self.mouseDrawMode
+
         self.initUI()
 
     def initUI(self):
-        self.sq = 30 # starting square size
-
-        #square size relates to zoom
-        self.maxSq = 50
-        self.minSq = 5
-
-        #The number of squares rendered
+        self.h = 500
+        self.w = 500
+        self.sq = 30
         self.renderWidth = self.size().width() // self.sq
         self.renderHeight  = self.size().height() // self.sq
-
-        #board offset of rendering
-        self.renderY = 0
-        self.renderX = 0
+        self.renderY = (self.h - self.renderHeight) // 2
+        self.renderX = (self.w - self.renderWidth) // 2
+        
         
         self.genCount = 0
-        self.coords = set() #empty set of live cells
+
+        self.board = [[False for i in range(self.w)] for j in range(self.h)]
+
         self.c = Qt.Qt.darkCyan
 
         self.defineRenderRegion()
 
     def doGeneration(self):
-        '''
-        #Old generation function (using 2D array)
         #copy current generation
         #Iterate through previous generation, determining state for next. Apply to next
         newGen = [[False for j in range(self.w)] for i in range(self.h)] #init new gen
@@ -224,38 +146,17 @@ class GameOfLife(Qt.QWidget):
                         newGen[i][j] = True
         self.board = newGen #current = new
         self.genCount += 1
-        '''
-       
-        activeSet = set() #Set of all dead cells that could change (ie neighbors of living cells)
-        nextGen = set()
-        
-        for i in self.coords: #Create set of dead cells adjacent to live cells to calculate
-            activeSet.update(self.getNeighborSet(i))
-        activeSet.difference_update(self.coords) #Subtract live cells from neighbors
-        
-        for i in activeSet:
-            if self.countLiveNeighbors(i) == 3:
-                nextGen.add(i)
-                
-        for i in self.coords: #iterate through currently living cells
-            neighbours = self.countLiveNeighbors(i)
-            if neighbours >= 2 and neighbours <= 3:
-                nextGen.add(i)
-        self.coords = nextGen.copy() #copy nextGen into current set
-        self.genCount +=1
-            
 
-    def getNeighborSet(self, coordPoint):
-        retSet = set()
-        for i in range(-1,2):
-            for j in range(-1,2):
-                p = (coordPoint[0]+i, coordPoint[1]+j)
-                retSet.add(p)
-        retSet.remove(coordPoint)
-        return retSet
-        
-    def countLiveNeighbors(self, point):
-        return len(self.coords.intersection(self.getNeighborSet(point)))
+    def countLiveNeighbors(self, row, col):
+        liveCount = 0
+        for i in range(row-1, row+2, 1):
+            for j in range(col-1, col+2, 1):
+                if i >= 0 and j >=0 and i < self.h and j < self.w:
+                    if self.board[i][j]:
+                        liveCount += 1
+        if self.board[row][col]:
+            liveCount -= 1
+        return liveCount
 
     def mousePressEvent(self, e):
         row = (e.y()) // self.sq
@@ -270,36 +171,13 @@ class GameOfLife(Qt.QWidget):
         row = (e.y()) // self.sq
         col = (e.x()) // self.sq
         if e.button() == 1:
-            if self.mouseMode == self.mouseDrawMode:
-                self.mouseDraw(row, col)
-            elif self.mouseMode == self.mouseEraseMode:
-                self.mouseErase(row, col)
-            else:
-                self.mousePlace(row, col)
+            for i in range(min(self.pressRow, row), max(self.pressRow, row)+1):
+                for j in range(min(self.pressCol, col), max(self.pressCol, col)+1):
+                    self.board[i+self.renderY][j+self.renderX] = not self.board[i+self.renderY][j+self.renderX]
         else:
             self.doGeneration()
         self.update()
 
-    def mouseDraw(self, row, col):
-        for i in range(min(self.pressRow, row), max(self.pressRow, row)+1):
-            for j in range(min(self.pressCol, col), max(self.pressCol, col)+1):
-                p = (i+self.renderY,j+self.renderX)
-                if p in self.coords:
-                    self.coords.remove(p)
-                else:
-                    self.coords.add(p)
-                        
-    def mouseErase(self, row, col):
-        for i in range(min(self.pressRow, row), max(self.pressRow, row)+1):
-            for j in range(min(self.pressCol, col), max(self.pressCol, col)+1):
-                p = (i+self.renderY,j+self.renderX)
-                if p in self.coords:
-                    self.coords.remove(p)
-
-    def mousePlace(self, row, col):
-        form = self.lf.getLifeformSet(self.lifeform, row, col, self.renderY, self.renderX, self.flipDir)
-        self.coords.update(form)
-        
     def wheelEvent(self, e):
         if e.delta() > 0:
             self.zoom(True)
@@ -308,20 +186,17 @@ class GameOfLife(Qt.QWidget):
             
 
     def keyPressEvent(self, e):
-        #this is the janky formula I came up with to convert square size to a panning scale
-        panScale = int(1/float(self.sq * 0.01)) 
-        #print('panScale', panScale)
         if e.key() == Qt.Qt.Key_Space:
             self.doGeneration()
             self.update()
         elif e.key() == Qt.Qt.Key_Up:
-            self.renderY -= panScale
+            self.renderY -= 1
         elif e.key() == Qt.Qt.Key_Down:
-            self.renderY += panScale
+            self.renderY += 1
         elif e.key() == Qt.Qt.Key_Right:
-            self.renderX += panScale
+            self.renderX+= 1
         elif e.key() == Qt.Qt.Key_Left:
-            self.renderX -= panScale
+            self.renderX -= 1
         self.update()
     
     def paintEvent(self, e):
@@ -337,15 +212,15 @@ class GameOfLife(Qt.QWidget):
         for i in range(0, self.renderWidth):
             for j in range(0, self.renderHeight):
                 qp.drawRect(self.renderRects[j][i])
-                if (j+self.renderY, i+self.renderX) in self.coords:
-                    #might be more efficient to iterate over set instead of having this if statement^
+                if self.board[j+self.renderY][i+self.renderX]:
                     qp.fillRect(self.renderRects[j][i], self.c)
 
     def zoom(self, zoomIn):
-        #Zoom changes the size of the rendered squares: smaller squares means more are rendered
-        if zoomIn and self.sq < self.maxSq:
+        #Max square size: 30
+        #Min square size: 6
+        if zoomIn and self.sq < 30:
             self.sq += 1
-        elif not zoomIn and self.sq > self.minSq:
+        elif not zoomIn and self.sq > 6:
             self.sq -= 1
         self.defineRenderRegion()
         self.update()
@@ -371,19 +246,13 @@ class GameOfLife(Qt.QWidget):
 
     def resetGame(self):
         self.genCount = 0
-        self.coords = set()
+        self.board = [[False for i in range(self.w)] for j in range(self.h)]
         self.update()
 
 def main():
-    
     app = Qt.QApplication(sys.argv)
     w = mainWindow()
-
-    l = lifeforms()
-    print(l.species['glider'])
-    
     sys.exit(app.exec_())
-    
 
 if __name__ == '__main__':
     main()
