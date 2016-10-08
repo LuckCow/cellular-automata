@@ -246,6 +246,9 @@ class GameOfLife(Qt.QWidget):
         #board offset of rendering
         self.renderY = 0
         self.renderX = 0
+
+        self.gridOffsetX = 0
+        self.gridOffsetY = 0
         
         self.genCount = 0
         self.coords = set() #empty set of live cells
@@ -300,6 +303,8 @@ class GameOfLife(Qt.QWidget):
         self.pressCol = col
         if e.button() == 2:
             self.rightPressed = True
+            self.lastMouseX = e.x()
+            self.lastMouseY = e.y()
 
         
     def mouseReleaseEvent(self, e):
@@ -327,12 +332,12 @@ class GameOfLife(Qt.QWidget):
             self.lifeformOutline = self.species[self.lf].getLifeformSet(row, col, 0, 0)
             self.update()
         if self.rightPressed: #TODO: correct logic for this
-            direc = None
-            if row - self.pressRow > 1:
-                direc = Direc.right
-            self.panBoard(direc, 1)
-            #print(self.lifeformOutline)
-
+            dx = e.x() - self.lastMouseX
+            dy = e.y() - self.lastMouseY
+            self.panSquares(dx, dy)
+            self.lastMouseX = e.x()
+            self.lastMouseY = e.y()
+            
     def mouseDraw(self, row, col):
         for i in range(min(self.pressRow, row), max(self.pressRow, row)+1):
             for j in range(min(self.pressCol, col), max(self.pressCol, col)+1):
@@ -366,6 +371,15 @@ class GameOfLife(Qt.QWidget):
             self.update()
         if e.key() in list(Direc):
             self.panBoard(e.key())
+
+    def panSquares(self, dx, dy):
+        self.gridOffsetX += dx
+        self.gridOffsetY += dy
+        for i in range(0, self.renderWidth):
+            for j in range(0, self.renderHeight):
+                self.renderRects[j][i].translate(dx, dy)
+        self.update()
+        
 
     def panBoard(self, direc, scale=None):
         if not scale:
