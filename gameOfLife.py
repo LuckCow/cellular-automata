@@ -53,6 +53,14 @@ User expected right click to either pan or give a menu. (NOT DO NEXT GENERATION)
 from PyQt4 import Qt
 import sys
 from lifeforms import lifeform
+from enum import IntEnum
+
+class Direc(IntEnum):
+    up = Qt.Qt.Key_Up
+    down = Qt.Qt.Key_Down
+    right = Qt.Qt.Key_Right
+    left = Qt.Qt.Key_Left
+
 
 class mainWindow(Qt.QMainWindow):
     """
@@ -250,6 +258,8 @@ class GameOfLife(Qt.QWidget):
 
         self.setMouseTracking(True)
 
+        self.rightPressed = False
+
     def doGeneration(self):
         #Moves the state to next generation
         activeSet = set() #Set of all dead cells that could change (ie neighbors of living cells)
@@ -286,9 +296,10 @@ class GameOfLife(Qt.QWidget):
     def mousePressEvent(self, e):
         row = (e.y()) // self.sq
         col = (e.x()) // self.sq
-        if e.button() == 1:
-            self.pressRow = row
-            self.pressCol = col
+        self.pressRow = row
+        self.pressCol = col
+        if e.button() == 2:
+            self.rightPressed = True
 
         
     def mouseReleaseEvent(self, e):
@@ -302,6 +313,8 @@ class GameOfLife(Qt.QWidget):
                 self.mouseErase(row, col)
             else:
                 self.mousePlace(row, col)
+        elif e.button() == 2:
+            self.rightPressed = False
         else:
             self.doGeneration()
         self.update()
@@ -312,6 +325,9 @@ class GameOfLife(Qt.QWidget):
             col = (e.x()) // self.sq
             self.lifeformOutline = self.species[self.lf].getLifeformSet(row, col, 0, 0)
             self.update()
+        if self.rightPressed:
+            panScale = int(1/float(self.sq * 0.01)) #The jank proliferates
+            
             #print(self.lifeformOutline)
 
     def mouseDraw(self, row, col):
@@ -348,16 +364,23 @@ class GameOfLife(Qt.QWidget):
         if e.key() == Qt.Qt.Key_Space:
             self.doGeneration()
             self.update()
-        elif e.key() == Qt.Qt.Key_Up:
-            self.renderY -= panScale
-        elif e.key() == Qt.Qt.Key_Down:
-            self.renderY += panScale
-        elif e.key() == Qt.Qt.Key_Right:
-            self.renderX += panScale
-        elif e.key() == Qt.Qt.Key_Left:
-            self.renderX -= panScale
+        if e.key() in list(Direc):
+            self.panBoard(e.key())
+
+    def panBoard(self, direc, scale=None):
+        if not scale:
+            scale = int(1/float(self.sq * 0.01))
+        ###global Direc
+        if direc == Direc.up:
+            self.renderY -= scale
+        elif direc == Direc.down:
+            self.renderY += scale
+        elif direc == Direc.right:
+            self.renderX += scale
+        elif direc == Direc.left:
+            self.renderX -= scale
         self.update()
-    
+            
     def paintEvent(self, e):
         qp = Qt.QPainter()
         qp.begin(self)
