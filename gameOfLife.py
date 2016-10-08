@@ -243,10 +243,11 @@ class GameOfLife(Qt.QWidget):
         self.renderWidth = self.size().width() // self.sq
         self.renderHeight  = self.size().height() // self.sq
 
-        #board offset of rendering
+        #offset of render area relative to global coordinate frame
         self.renderY = 0
         self.renderX = 0
 
+        #offset of squares relative to render area
         self.gridOffsetX = 0
         self.gridOffsetY = 0
         
@@ -296,9 +297,13 @@ class GameOfLife(Qt.QWidget):
     def countLiveNeighbors(self, point):
         return len(self.coords.intersection(self.getNeighborSet(point)))
 
+    def getIndex(self, coords):
+        #Coords are (y, x)
+        return ((coords[0] + self.sq - self.gridOffsetY) // self.sq,
+                (coords[1] + self.sq - self.gridOffsetX) // self.sq) 
+        
     def mousePressEvent(self, e):
-        row = (e.y()) // self.sq
-        col = (e.x()) // self.sq
+        row, col = self.getIndex((e.y(),e.x()))
         self.pressRow = row
         self.pressCol = col
         if e.button() == 2:
@@ -309,8 +314,7 @@ class GameOfLife(Qt.QWidget):
         
     def mouseReleaseEvent(self, e):
         #print('Mouse Pressed:','Button:',e.button(),'x',e.x(),'y',e.y())
-        row = (e.y()) // self.sq
-        col = (e.x()) // self.sq
+        row, col = self.getIndex((e.y(),e.x()))
         if e.button() == 1:
             if self.mouseMode == self.mouseDrawMode:
                 self.mouseDraw(row, col)
@@ -325,9 +329,8 @@ class GameOfLife(Qt.QWidget):
         self.update()
 
     def mouseMoveEvent(self, e):
-        row = (e.y()) // self.sq
-        col = (e.x()) // self.sq
-            
+        row, col = self.getIndex((e.y(),e.x()))
+        
         if self.mouseMode == self.mousePlaceMode:
             self.lifeformOutline = self.species[self.lf].getLifeformSet(row, col, 0, 0)
             self.update()
@@ -372,12 +375,19 @@ class GameOfLife(Qt.QWidget):
         if e.key() in list(Direc):
             self.panBoard(e.key())
 
-    def panSquares(self, dx, dy):
-        self.gridOffsetX += dx
-        self.gridOffsetY += dy
-        for i in range(0, self.renderWidth):
-            for j in range(0, self.renderHeight):
-                self.renderRects[j][i].translate(dx, dy)
+    def panSquares(self, dx, dy): #TODO: make panning more smooth
+        #sets offset of squares relative to screen
+        self.gridOffsetX -= dx
+        self.gridOffsetY -= dy
+
+        if self.gridOffsetX > self.sq or self.gridOffsetX < 0:
+            self.renderX += self.gridOffsetX // self.sq
+            self.gridOffsetX %= self.sq
+        if self.gridOffsetY > self.sq or self.gridOffsetY < 0:
+            self.renderY += self.gridOffsetY // self.sq
+            self.gridOffsetY %= self.sq
+
+        self.defineRenderRegion()
         self.update()
         
 
@@ -429,9 +439,9 @@ class GameOfLife(Qt.QWidget):
         self.defineRenderRegion()
         self.update()
 
-    def defineRenderRegion(self):
-        self.renderWidth = self.size().width() // self.sq
-        self.renderHeight  = self.size().height() // self.sq
+    def defineRenderRegion(self): 
+        self.renderWidth = self.size().width() // self.sq + 1
+        self.renderHeight  = self.size().height() // self.sq + 2
         
         self.renderRects = [[False for i in range(0, self.renderWidth)]
                             for j in range(0, self.renderHeight)]
@@ -439,6 +449,7 @@ class GameOfLife(Qt.QWidget):
         for i in range(0, self.renderWidth):
             for j in range(0, self.renderHeight):
                 self.renderRects[j][i] = Qt.QRect((i*s), (j*s), s, s)
+                self.renderRects[j][i].translate(self.gridOffsetX - self.sq, self.gridOffsetY - self.sq)
         
     def timerEvent(self, e):
         self.doGeneration()
