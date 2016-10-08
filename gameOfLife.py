@@ -326,8 +326,10 @@ class GameOfLife(Qt.QWidget):
             self.lifeformOutline = self.species[self.lf].getLifeformSet(row, col, 0, 0)
             self.update()
         if self.rightPressed:
-            panScale = int(1/float(self.sq * 0.01)) #The jank proliferates
-            
+            direc = None
+            if row - self.pressRow > 1:
+                direc = Direc.right
+            panBoard(direc)
             #print(self.lifeformOutline)
 
     def mouseDraw(self, row, col):
@@ -358,9 +360,6 @@ class GameOfLife(Qt.QWidget):
             
 
     def keyPressEvent(self, e):
-        #this is the janky formula I came up with to convert square size to a panning scale
-        panScale = int(1/float(self.sq * 0.01)) 
-        #print('panScale', panScale)
         if e.key() == Qt.Qt.Key_Space:
             self.doGeneration()
             self.update()
@@ -369,7 +368,7 @@ class GameOfLife(Qt.QWidget):
 
     def panBoard(self, direc, scale=None):
         if not scale:
-            scale = int(1/float(self.sq * 0.01))
+            scale = int(1/float(self.sq * 0.01)) #No particular logic behind this formula
         ###global Direc
         if direc == Direc.up:
             self.renderY -= scale
