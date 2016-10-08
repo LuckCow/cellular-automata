@@ -10,7 +10,7 @@ Completed full base functionality: 5:30pm (Timer)
 I implimented storing life as a set of coordinates to allow for better scalability.
 Only cells adjacent to living cells need to be considered instead of all NxN cells in 2D space
 
-Python version 4.8.4
+Python version 3.4.3
 PyQt version 4.8.7 - Documentation: http://pyqt.sourceforge.net/Docs/PyQt4/classes.html
 
 Rules
@@ -26,6 +26,7 @@ GUI
 Infinite board with generation of both rendered and nonrendered life
 Pause/Varying speed of animation
 Can edit state in pause and while running
+Can place and rotate a small set of known lifeforms
 
 Display:
 Board
@@ -33,8 +34,7 @@ Generation Number
 Speed of animation
 
 TODO:
-Implement preset structure / copy pasting structures (lifeforms)
-Implement faster panning
+Implement copy pasting structures (lifeforms)
 Show generation number
 
 Known Bugs:
@@ -42,12 +42,17 @@ Timer slider gives weird console error:
 (python3:7461): Gtk-CRITICAL **: IA__gtk_widget_get_direction: assertion 'GTK_IS_WIDGET (widget)' failed
    ^does not seem to affect anything
 
-Using Timer sliders takes focus away from grid (arrow keys move timer slider instead of panning)
+User Feedback:
+A bit difficult to pick up on the controls without explanation
+--> add labels for buttons and perhaps a help menu with some explanation about the game
+Could be a bit clearer about when the mouse is in erase or draw mode
+User expected right click to either pan or give a menu. (NOT DO NEXT GENERATION)
+-->Possibly add right click mouse panning
 """
 
 from PyQt4 import Qt
 import sys
-from lifeforms import lifeforms
+from lifeforms import lifeform
 
 class mainWindow(Qt.QMainWindow):
     """
@@ -71,18 +76,8 @@ class mainWindow(Qt.QMainWindow):
         restart = Qt.QAction('Reset', self)
         restart.setShortcut('Ctrl+N')
         restart.triggered.connect(self.resetGame)
-        '''
-        #Grid layout
-        self.gridContainer = Qt.QWidget()
-        self.grid = Qt.QGridLayout()
-        self.grid.addWidget(self.timer , 0,0)
-        self.grid.addWidget(self.mc, 0, 1)
-        self.grid.addWidget(self.b, 1, 0, 20, 2)
-        self.gridContainer.setLayout(self.grid)
-        #self.grid.setRowMinimumHeight(1, 400)
-        #self.grid.setColumnMinimumWidth(0, self.size().width())
-        self.setCentralWidget(self.gridContainer)
-        '''
+
+        #Timer Slider
         sld = Qt.QSlider(Qt.Qt.Horizontal, self)
         sld.valueChanged.connect(self.changeTimerSpeed)
 
@@ -99,49 +94,85 @@ class mainWindow(Qt.QMainWindow):
             but = Qt.QPushButton(m, self)
             but.setCheckable(True)
             but.clicked.connect(self.setMouseMode)
+            but.setFocusPolicy(Qt.Qt.NoFocus)
             self.mouseModeButtons.addButton(but, modes[m])
         self.mouseModeButtons.button(0).setChecked(True)
         
         self.toolbar = self.addToolBar('Tooooooooools')
         self.toolbar.addAction(restart)
+        sld.setFocusPolicy(Qt.Qt.NoFocus)
         self.toolbar.addWidget(sld)
+        timerBut.setFocusPolicy(Qt.Qt.NoFocus)
         self.toolbar.addWidget(timerBut)
+        
         vWidget = Qt.QWidget()
         vbox = Qt.QVBoxLayout()
         for b in range(3):
             vbox.addWidget(self.mouseModeButtons.button(b))
         vbox.setSpacing(0)
         vWidget.setLayout(vbox)
+        vWidget.setFocusPolicy(Qt.Qt.NoFocus)
         self.toolbar.addWidget(vWidget)
 
         lifeformMenu = Qt.QMenu('Lifeforms')
-        for l in self.gol.lf.species:
+        for l in self.gol.species:
             act = Qt.QAction(l, lifeformMenu)
             act.triggered.connect(self.setLifeform)
             lifeformMenu.addAction(act)
         self.lfBut = Qt.QPushButton('LifeForm')
         self.lfBut.setMenu(lifeformMenu)
+        self.lfBut.setFocusPolicy(Qt.Qt.NoFocus)
         self.toolbar.addWidget(self.lfBut)
 
-        self.dial = Qt.QDial()
-        self.dial.setRange(0,3)
-        self.dial.setValue(1)
-        self.toolbar.addWidget(self.dial)
+        # I hard coded the transform buttons because
+        #python kept messing up the order of them with the dictionary loop
+        vWidget = Qt.QWidget()
+        vbox = Qt.QVBoxLayout()
+        but = Qt.QPushButton('Flip Horizontal', self)
+        but.clicked.connect(self.transformLifeform)
+        but.setFocusPolicy(Qt.Qt.NoFocus)
+        vbox.addWidget(but)
+        but = Qt.QPushButton('Flip Vertical', self)
+        but.clicked.connect(self.transformLifeform)
+        but.setFocusPolicy(Qt.Qt.NoFocus)
+        vbox.addWidget(but)
+        vbox.setSpacing(0)
+        vWidget.setLayout(vbox)
+        vWidget.setFocusPolicy(Qt.Qt.NoFocus)
+        self.toolbar.addWidget(vWidget)
+
+        vWidget = Qt.QWidget()
+        vbox = Qt.QVBoxLayout()
+        but = Qt.QPushButton('Rotate Right', self)
+        but.clicked.connect(self.transformLifeform)
+        but.setFocusPolicy(Qt.Qt.NoFocus)
+        vbox.addWidget(but)
+        but = Qt.QPushButton('Rotate Left', self)
+        but.clicked.connect(self.transformLifeform)
+        but.setFocusPolicy(Qt.Qt.NoFocus)
+        vbox.addWidget(but)
+        vbox.setSpacing(0)
+        vWidget.setLayout(vbox)
+        vWidget.setFocusPolicy(Qt.Qt.NoFocus)
+        self.toolbar.addWidget(vWidget)
+
         
         self.resize(1800,900)
         self.setWindowTitle('Welcome to Conway')
         self.show()
-
-    def setLifeformDirection(self):
-        self.gol.flipDir = self.dial.value()
+        
+    def transformLifeform(self):
+        sender = self.sender()
+        self.gol.species[self.gol.lf].funcList[sender.text()]()
 
     def setLifeform(self):
         sender = self.sender()
         self.lfBut.setText(sender.text())
-        self.gol.lifeform = sender.text()
+        self.gol.lf = sender.text()
         
     def setMouseMode(self):
         self.gol.mouseMode = self.mouseModeButtons.checkedId()
+        self.gol.update()
 
     def changeTimerSpeed(self, val):
         self.timerSpeed = 1000 / (val + 1)
@@ -173,9 +204,20 @@ class GameOfLife(Qt.QWidget):
     mouseEraseMode = 1
     mousePlaceMode = 2
 
-    lf = lifeforms()
-    lifeform = 'glider'
-    flipDir = 1
+    lf = 'glider'
+    species = {'glider': lifeform({(-1,-1),(1,0),(-1,0),(0,-1),(-1,1)}),
+               'LWSS': lifeform({(0,1),(0,4),(1,0),(2,0),(2,4),(3,0),(3,1),(3,2),(3,3)}),
+               'toad': lifeform({(0,2),(1,0),(1,3),(2,0),(2,3),(3,1)}),
+               'beacon': lifeform({(0,0),(0,1),(1,0),(2,3),(3,2),(3,3)}),
+               'pentadecathlon': lifeform({(0,1),(1,1),(2,0),(2,2),(3,1),(4,1),
+                                           (5,1),(6,1),(7,2),(7,0),(8,1),(9,1)}),
+               'R-pentomino': lifeform({(0,1),(0,2),(1,0),(1,1),(2,1)}),
+               'Diehard': lifeform({(0,6),(1,0),(1,1),(2,1),(2,5),(2,6),(2,7)}),
+               'Acorn': lifeform({(0,1),(1,3),(2,0),(2,1),(2,4),(2,5),(2,6)}),
+               'Infinity Line': lifeform({(0,0),(0,1),(0,2),(0,3),(0,4),(0,5),(0,6),(0,7),(0,9),(0,10),(0,11),
+                                          (0,12),(0,13),(0,17),(0,18),(0,19),(0,26),(0,27),(0,28),(0,29),(0,30),
+                                          (0,31),(0,32),(0,34),(0,35),(0,36),(0,37),(0,38)})
+               }
     
     def __init__(self):
         super(GameOfLife, self).__init__()
@@ -200,32 +242,16 @@ class GameOfLife(Qt.QWidget):
         self.genCount = 0
         self.coords = set() #empty set of live cells
         self.c = Qt.Qt.darkCyan
+        self.c2 = Qt.Qt.cyan
+
+        self.lifeformOutline = set()
 
         self.defineRenderRegion()
 
+        self.setMouseTracking(True)
+
     def doGeneration(self):
-        '''
-        #Old generation function (using 2D array)
-        #copy current generation
-        #Iterate through previous generation, determining state for next. Apply to next
-        newGen = [[False for j in range(self.w)] for i in range(self.h)] #init new gen
-        for i in range(self.h):
-            newGen[i] = self.board[i].copy() #shallow copy current gen
-        for i in range(self.h): #rows
-            for j in range(self.w): #cols
-                neighbours = self.countLiveNeighbors(i, j)
-                if self.board[i][j]: #alive
-                    if neighbours < 2 or neighbours > 3:
-                        newGen[i][j] = False
-                    else:
-                        newGen[i][j] = True
-                else: # dead
-                    if neighbours == 3:
-                        newGen[i][j] = True
-        self.board = newGen #current = new
-        self.genCount += 1
-        '''
-       
+        #Moves the state to next generation
         activeSet = set() #Set of all dead cells that could change (ie neighbors of living cells)
         nextGen = set()
         
@@ -280,6 +306,14 @@ class GameOfLife(Qt.QWidget):
             self.doGeneration()
         self.update()
 
+    def mouseMoveEvent(self, e):
+        if self.mouseMode == self.mousePlaceMode:
+            row = (e.y()) // self.sq
+            col = (e.x()) // self.sq
+            self.lifeformOutline = self.species[self.lf].getLifeformSet(row, col, 0, 0)
+            self.update()
+            #print(self.lifeformOutline)
+
     def mouseDraw(self, row, col):
         for i in range(min(self.pressRow, row), max(self.pressRow, row)+1):
             for j in range(min(self.pressCol, col), max(self.pressCol, col)+1):
@@ -297,7 +331,7 @@ class GameOfLife(Qt.QWidget):
                     self.coords.remove(p)
 
     def mousePlace(self, row, col):
-        form = self.lf.getLifeformSet(self.lifeform, row, col, self.renderY, self.renderX, self.flipDir)
+        form = self.species[self.lf].getLifeformSet(row, col, self.renderY, self.renderX)
         self.coords.update(form)
         
     def wheelEvent(self, e):
@@ -341,6 +375,14 @@ class GameOfLife(Qt.QWidget):
                     #might be more efficient to iterate over set instead of having this if statement^
                     qp.fillRect(self.renderRects[j][i], self.c)
 
+        if self.mouseMode == self.mousePlaceMode:
+            for coords in self.lifeformOutline:
+                if coords[0] >= 0 and coords[0] < self.renderHeight and coords[1] >= 0 and coords[1] < self.renderWidth:
+                    qp.fillRect(self.renderRects[coords[0]][coords[1]], self.c2)
+
+        #Draw mouse placing lifeform outline
+            
+
     def zoom(self, zoomIn):
         #Zoom changes the size of the rendered squares: smaller squares means more are rendered
         if zoomIn and self.sq < self.maxSq:
@@ -378,9 +420,6 @@ def main():
     
     app = Qt.QApplication(sys.argv)
     w = mainWindow()
-
-    l = lifeforms()
-    print(l.species['glider'])
     
     sys.exit(app.exec_())
     
