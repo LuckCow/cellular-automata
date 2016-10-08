@@ -320,16 +320,17 @@ class GameOfLife(Qt.QWidget):
         self.update()
 
     def mouseMoveEvent(self, e):
+        row = (e.y()) // self.sq
+        col = (e.x()) // self.sq
+            
         if self.mouseMode == self.mousePlaceMode:
-            row = (e.y()) // self.sq
-            col = (e.x()) // self.sq
             self.lifeformOutline = self.species[self.lf].getLifeformSet(row, col, 0, 0)
             self.update()
-        if self.rightPressed:
+        if self.rightPressed: #TODO: correct logic for this
             direc = None
             if row - self.pressRow > 1:
                 direc = Direc.right
-            panBoard(direc)
+            self.panBoard(direc, 1)
             #print(self.lifeformOutline)
 
     def mouseDraw(self, row, col):
