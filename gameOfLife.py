@@ -250,6 +250,8 @@ class GameOfLife(Qt.QWidget):
         #offset of squares relative to render area
         self.gridOffsetX = 0
         self.gridOffsetY = 0
+        self.cellOffsetX = self.sq/2
+        self.cellOffsetY = self.sq/2
         
         self.genCount = 0
         self.coords = set() #empty set of live cells
@@ -263,6 +265,8 @@ class GameOfLife(Qt.QWidget):
         self.setMouseTracking(True)
 
         self.rightPressed = False
+
+        self.moveX = 0
 
     def doGeneration(self):
         #Moves the state to next generation
@@ -379,13 +383,25 @@ class GameOfLife(Qt.QWidget):
         #sets offset of squares relative to screen
         self.gridOffsetX -= dx
         self.gridOffsetY -= dy
+        self.cellOffsetX -= dx
+        self.cellOffsetY -= dy
 
+        #Grid offset: moves grid relative to screen
         if self.gridOffsetX > self.sq or self.gridOffsetX < 0:
-            self.renderX += self.gridOffsetX // self.sq
+            #self.renderX += self.gridOffsetX // self.sq
             self.gridOffsetX %= self.sq
+            self.moveX = 0
         if self.gridOffsetY > self.sq or self.gridOffsetY < 0:
-            self.renderY += self.gridOffsetY // self.sq
+            #self.renderY += self.gridOffsetY // self.sq
             self.gridOffsetY %= self.sq
+
+        #Cell offset: moves cells relative to grid (midpoint offset for smoother panning)
+        if self.cellOffsetX > self.sq or self.cellOffsetX < 0:
+            self.renderX += self.cellOffsetX // self.sq
+            self.cellOffsetX %= self.sq
+        if self.cellOffsetY > self.sq or self.cellOffsetY < 0:
+            self.renderY += self.cellOffsetY // self.sq
+            self.cellOffsetY %= self.sq
 
         self.defineRenderRegion()
         self.update()
@@ -434,8 +450,12 @@ class GameOfLife(Qt.QWidget):
         #Zoom changes the size of the rendered squares: smaller squares means more are rendered
         if zoomIn and self.sq < self.maxSq:
             self.sq += 1
+            self.cellOffsetY += 0.5
+            self.cellOffsetX += 0.5
         elif not zoomIn and self.sq > self.minSq:
             self.sq -= 1
+            self.cellOffsetY -= 0.5
+            self.cellOffsetX -= 0.5
         self.defineRenderRegion()
         self.update()
 
