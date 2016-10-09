@@ -10,6 +10,9 @@ Completed full base functionality: 5:30pm (Timer)
 I implimented storing life as a set of coordinates to allow for better scalability.
 Only cells adjacent to living cells need to be considered instead of all NxN cells in 2D space
 
+10/9/2016
+I decided to revisit this project and add right click panning. I am considering expanding it into more of a game. some type of mutation based idea is looking pretty promising. some brainstorming is happening below.
+
 Python version 3.4.3
 PyQt version 4.8.7 - Documentation: http://pyqt.sourceforge.net/Docs/PyQt4/classes.html
 
@@ -27,6 +30,7 @@ Infinite board with generation of both rendered and nonrendered life
 Pause/Varying speed of animation
 Can edit state in pause and while running
 Can place and rotate a small set of known lifeforms
+Pan with right mouse button
 
 Display:
 Board
@@ -36,6 +40,33 @@ Speed of animation
 TODO:
 Implement copy pasting structures (lifeforms)
 Show generation number
+Break file/classes up
+
+Expansion Brainstorm
+Expand into a game
+-->two factions?
+-->Resource collection
+-->Upgrades
+-->some other mechanism for cell death
+---->squares lose/replenish ability to support cells
+---->different color tiles have different life rules
+---->cells die out after reproducing too much
+---->mutation/ cancer - cells change colors and have new rules
+-->Add a moving player entity
+
+Mutation:
+Have a random change for a new cell to become a different random color, which has a new set of cells.
+The new set follows a new, randomly generated rule pattern
+The new cell would convert surrounding default cells in a given area into the new cell type
+Once the user discovers a new cell type, they can then draw with that cell type
+-new cell types could be named with a random name generator
+-new cell behaviors and names could be preset to avoid hyperexpansion/ hyperfragile cell types
+This gives a cool exploration/collection aspect of the game, where players can discover the behavior of new cell types and try to collect new ones
+Interactions between sets would have to be defined:
+-overlap/ghosting
+-any living cell follows same rules
+-different cell types have different interaction
+--takeover/kill/promote growth
 
 Known Bugs:
 Timer slider gives weird console error:
@@ -46,8 +77,10 @@ User Feedback:
 A bit difficult to pick up on the controls without explanation
 --> add labels for buttons and perhaps a help menu with some explanation about the game
 Could be a bit clearer about when the mouse is in erase or draw mode
+
+Addressed user feedback
 User expected right click to either pan or give a menu. (NOT DO NEXT GENERATION)
--->Possibly add right click mouse panning
+-->added right click mouse panning
 """
 
 from PyQt4 import Qt
@@ -56,6 +89,7 @@ from lifeforms import lifeform
 from enum import IntEnum
 
 class Direc(IntEnum):
+    #Used for arrow key panning
     up = Qt.Qt.Key_Up
     down = Qt.Qt.Key_Down
     right = Qt.Qt.Key_Right
@@ -266,8 +300,6 @@ class GameOfLife(Qt.QWidget):
 
         self.rightPressed = False
 
-        self.moveX = 0
-
     def doGeneration(self):
         #Moves the state to next generation
         activeSet = set() #Set of all dead cells that could change (ie neighbors of living cells)
@@ -310,7 +342,7 @@ class GameOfLife(Qt.QWidget):
         row, col = self.getIndex((e.y(),e.x()))
         self.pressRow = row
         self.pressCol = col
-        if e.button() == 2:
+        if e.button() == 2: #Right mouse button: for panning
             self.rightPressed = True
             self.lastMouseX = e.x()
             self.lastMouseY = e.y()
@@ -338,7 +370,7 @@ class GameOfLife(Qt.QWidget):
         if self.mouseMode == self.mousePlaceMode:
             self.lifeformOutline = self.species[self.lf].getLifeformSet(row, col, 0, 0)
             self.update()
-        if self.rightPressed: #TODO: correct logic for this
+        if self.rightPressed: #Pan
             dx = e.x() - self.lastMouseX
             dy = e.y() - self.lastMouseY
             self.panSquares(dx, dy)
@@ -379,8 +411,8 @@ class GameOfLife(Qt.QWidget):
         if e.key() in list(Direc):
             self.panBoard(e.key())
 
-    def panSquares(self, dx, dy): #TODO: make panning more smooth
-        #sets offset of squares relative to screen
+    def panSquares(self, dx, dy): #Right click
+        #sets offset of squares relative to screen given a dx and dy amount
         self.gridOffsetX -= dx
         self.gridOffsetY -= dy
         self.cellOffsetX -= dx
@@ -390,7 +422,6 @@ class GameOfLife(Qt.QWidget):
         if self.gridOffsetX > self.sq or self.gridOffsetX < 0:
             #self.renderX += self.gridOffsetX // self.sq
             self.gridOffsetX %= self.sq
-            self.moveX = 0
         if self.gridOffsetY > self.sq or self.gridOffsetY < 0:
             #self.renderY += self.gridOffsetY // self.sq
             self.gridOffsetY %= self.sq
@@ -407,7 +438,8 @@ class GameOfLife(Qt.QWidget):
         self.update()
         
 
-    def panBoard(self, direc, scale=None):
+    def panBoard(self, direc, scale=None): #arrow keys
+        #Older function: could use panSquares for better functionality
         if not scale:
             scale = int(1/float(self.sq * 0.01)) #No particular logic behind this formula
         ###global Direc
