@@ -1,0 +1,82 @@
+Conway's game of life
+Author: Nick Collins
+Date: 3/16/2016
+Time: 1:27pm
+Completed initial functionality: 3:30pm (GUI, generation)
+Completed full base functionality: 5:30pm (Timer)
+
+4/1/2016
+I implimented storing life as a set of coordinates to allow for better scalability.
+Only cells adjacent to living cells need to be considered instead of all NxN cells in 2D space
+
+10/9/2016
+I decided to revisit this project and add right click panning. I am considering expanding it into more of a game. some type of mutation based idea is looking pretty promising. some brainstorming is happening below.
+
+Python version 3.4.3
+PyQt version 4.8.7 - Documentation: http://pyqt.sourceforge.net/Docs/PyQt4/classes.html
+
+Rules
+
+    Any live cell with fewer than two live neighbours dies, as if caused by under-population.
+    Any live cell with two or three live neighbours lives on to the next generation.
+    Any live cell with more than three live neighbours dies, as if by over-population.
+    Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+(from https://en.wikipedia.org/wiki/Conway's_Game_of_Life)
+
+Features:
+GUI
+Infinite board with generation of both rendered and nonrendered life
+Pause/Varying speed of animation
+Can edit state in pause and while running
+Can place and rotate a small set of known lifeforms
+Pan with right mouse button
+
+Display:
+Board
+Generation Number
+Speed of animation
+
+TODO:
+Implement copy pasting structures (lifeforms)
+Show generation number
+Break file/classes up
+
+Expansion Brainstorm
+Expand into a game
+-->two factions?
+-->Resource collection
+-->Upgrades
+-->some other mechanism for cell death
+---->squares lose/replenish ability to support cells
+---->different color tiles have different life rules
+---->cells die out after reproducing too much
+---->mutation/ cancer - cells change colors and have new rules
+-->Add a moving player entity
+
+Mutation:
+Have a random change for a new cell to become a different random color, which has a new set of cells.
+The new set follows a new, randomly generated rule pattern
+The new cell would convert surrounding default cells in a given area into the new cell type
+Once the user discovers a new cell type, they can then draw with that cell type
+-new cell types could be named with a random name generator
+-new cell behaviors and names could be preset to avoid hyperexpansion/ hyperfragile cell types
+This gives a cool exploration/collection aspect of the game, where players can discover the behavior of new cell types and try to collect new ones
+Interactions between sets would have to be defined:
+-overlap/ghosting
+-any living cell follows same rules
+-different cell types have different interaction
+--takeover/kill/promote growth
+
+Known Bugs:
+Timer slider gives weird console error:
+(python3:7461): Gtk-CRITICAL **: IA__gtk_widget_get_direction: assertion 'GTK_IS_WIDGET (widget)' failed
+   ^does not seem to affect anything
+
+User Feedback:
+A bit difficult to pick up on the controls without explanation
+--> add labels for buttons and perhaps a help menu with some explanation about the game
+Could be a bit clearer about when the mouse is in erase or draw mode
+
+Addressed user feedback
+User expected right click to either pan or give a menu. (NOT DO NEXT GENERATION)
+-->added right click mouse panning
