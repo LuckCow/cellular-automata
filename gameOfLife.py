@@ -69,7 +69,6 @@ class GameOfLife(Qt.QWidget):
         self.mouseMode = self.mouseDrawMode
         self.initUI()
 
-    zoo = Lifeforms()
         
     def initUI(self):
         self.sq = 30 # starting square size
@@ -94,11 +93,10 @@ class GameOfLife(Qt.QWidget):
         
         self.genCount = 0
         self.coords = set() #empty set of live cells
-        self.oldCoords = set() #previous set for static area elimination
-        self.olderCoords = set()
         self.c = Qt.Qt.darkCyan
         self.c2 = Qt.Qt.cyan
 
+        self.zoo = Lifeforms()
         self.lifeformOutline = self.zoo.setPoints
         self.defineRenderRegion()
 
@@ -123,7 +121,6 @@ class GameOfLife(Qt.QWidget):
             neighbours = self.countLiveNeighbors(i)
             if neighbours >= 2 and neighbours <= 3:# and random() < 0.999:
                 nextGen.add(i)
-        self.oldCoords = self.coords
         self.coords = nextGen.copy() #copy nextGen into current set
         self.genCount +=1
             
