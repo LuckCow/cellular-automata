@@ -101,6 +101,10 @@ class GameOfLife(Qt.QWidget):
         self.defineRenderRegion()
 
         self.cellSets = [CellSet(None, [3,3] ,[2,3], Qt.Qt.darkCyan), ]
+        self.cellSetsSelection = 0
+
+        self.overpopulation = False
+        #Significant slow down was observed between 1700 and 2800 population count
 
         self.setMouseTracking(True)
 
@@ -124,12 +128,14 @@ class GameOfLife(Qt.QWidget):
             for i in cell.coords: #iterate through currently living cells
                 neighbours = self.countLiveNeighbors(i)
                 if cell.survive_range[0] <= neighbours <= cell.survive_range[1]:
-                    nextGen.add(i)
+                    if not self.overpopulation or random.random() > 0.05:
+                        nextGen.add(i)
             cell.coords = nextGen.copy() #copy nextGen into current set
             activeSet = set()
             nextGen = set()
         self.genCount +=1
-            
+        if self.genCount % 25 == 0:
+            print('Total Population: {} @ Generation: {}'.format(len(self.getLivingCells()),self.genCount))
 
     def getNeighborSet(self, coordPoint):
         retSet = set()
@@ -199,21 +205,21 @@ class GameOfLife(Qt.QWidget):
         for i in range(min(self.pressRow, row), max(self.pressRow, row)+1):
             for j in range(min(self.pressCol, col), max(self.pressCol, col)+1):
                 p = (i+self.renderY,j+self.renderX)
-                if p in self.cellSets[0].coords:
-                    self.cellSets[0].coords.remove(p)
+                if p in self.cellSets[self.cellSetsSelection].coords:
+                    self.cellSets[self.cellSetsSelection].coords.remove(p)
                 else:
-                    self.cellSets[0].coords.add(p)
+                    self.cellSets[self.cellSetsSelection].coords.add(p)
                         
     def mouseErase(self, row, col):
         for i in range(min(self.pressRow, row), max(self.pressRow, row)+1):
             for j in range(min(self.pressCol, col), max(self.pressCol, col)+1):
                 p = (i+self.renderY,j+self.renderX)
-                if p in self.cellSets[0].coords:
-                    self.cellSets[0].coords.remove(p)
+                if p in self.cellSets[self.cellSetsSelection].coords:
+                    self.cellSets[self.cellSetsSelection].coords.remove(p)
 
     def mousePlace(self, row, col):
         form = self.zoo.getLifeformSet(row, col, self.renderY, self.renderX)
-        self.cellSets[0].coords.update(form)
+        self.cellSets[self.cellSetsSelection].coords.update(form)
         
     def wheelEvent(self, e):
         if e.delta() > 0:
