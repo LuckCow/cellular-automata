@@ -68,6 +68,8 @@ class GameOfLife(Qt.QWidget):
     def __init__(self):
         super(GameOfLife, self).__init__()
         self.mouseMode = self.mouseDrawMode
+        self.timer = Qt.QBasicTimer()
+        self.timerSpeed = 1000
         self.initUI()
 
         
@@ -330,12 +332,34 @@ class GameOfLife(Qt.QWidget):
     def timerEvent(self, e):
         self.doGeneration()
         self.update()
+
+    def changeTimerSpeed(self, val):
+        self.timerSpeed = val
+        print(self.timerSpeed)
+        if self.timer.isActive():
+            self.stopTimer()
+            self.startTimer()
+
+    def toggleTimer(self):
+        if self.timer.isActive():
+            self.stopTimer()
+        else:
+            self.startTimer()
+        
+    def startTimer(self):
+        #timer sends timerEvent every msTic amount of milliseconds
+        #timer sends events to GoL widget (which is self)
+        self.timer.start(self.timerSpeed, self)
+
+    def stopTimer(self):
+        self.timer.stop()
        
                 
     def resizeEvent(self, e):
         self.defineRenderRegion()
 
     def resetGame(self):
+        self.stopTimer()
         self.genCount = 0
         self.coords = set()
         self.update()

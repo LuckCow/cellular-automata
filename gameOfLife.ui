@@ -20,6 +20,37 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
+         <widget class="QFrame" name="frame_2">
+          <property name="maximumSize">
+           <size>
+            <width>200</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <widget class="QLabel" name="label_3">
+           <property name="geometry">
+            <rect>
+             <x>40</x>
+             <y>10</y>
+             <width>56</width>
+             <height>17</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Cell Type</string>
+           </property>
+          </widget>
+          <zorder>frame</zorder>
+          <zorder>label_3</zorder>
+         </widget>
+        </item>
+        <item>
          <widget class="QFrame" name="frame">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
@@ -49,13 +80,108 @@
            <property name="geometry">
             <rect>
              <x>70</x>
-             <y>0</y>
+             <y>10</y>
              <width>81</width>
              <height>31</height>
             </rect>
            </property>
            <property name="text">
-            <string>TextLabel</string>
+            <string>Timer</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="timer_button">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>40</y>
+             <width>85</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Start/Stop</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="default">
+            <bool>false</bool>
+           </property>
+           <property name="flat">
+            <bool>false</bool>
+           </property>
+          </widget>
+          <widget class="QSlider" name="timer_slider">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>100</y>
+             <width>160</width>
+             <height>18</height>
+            </rect>
+           </property>
+           <property name="minimum">
+            <number>10</number>
+           </property>
+           <property name="maximum">
+            <number>2000</number>
+           </property>
+           <property name="sliderPosition">
+            <number>150</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="invertedAppearance">
+            <bool>false</bool>
+           </property>
+           <property name="invertedControls">
+            <bool>false</bool>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksBelow</enum>
+           </property>
+           <property name="tickInterval">
+            <number>500</number>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_4">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>80</y>
+             <width>101</width>
+             <height>17</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Timer Speed</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_5">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>120</y>
+             <width>56</width>
+             <height>17</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>10ms</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_6">
+           <property name="geometry">
+            <rect>
+             <x>160</x>
+             <y>120</y>
+             <width>21</width>
+             <height>17</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>2s</string>
            </property>
           </widget>
          </widget>
@@ -190,8 +316,8 @@
    <slot>slot1()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>135</x>
-     <y>518</y>
+     <x>146</x>
+     <y>805</y>
     </hint>
     <hint type="destinationlabel">
      <x>310</x>
