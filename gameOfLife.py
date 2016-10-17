@@ -237,7 +237,7 @@ class GameOfLife(Qt.QWidget):
         if e.key() in list(Direc):
             self.panBoard(e.key())
 
-    def panSquares(self, dx, dy): #Right click
+    def panSquares(self, dx, dy): #Right click panning
         #sets offset of squares relative to screen given a dx and dy amount
         self.gridOffsetX -= dx
         self.gridOffsetY -= dy
@@ -283,6 +283,7 @@ class GameOfLife(Qt.QWidget):
         qp = Qt.QPainter()
         qp.begin(self)
         self.drawBoard(qp)
+        self.drawMode(qp)
         qp.end()
 
     def drawBoard(self, qp):
@@ -295,13 +296,6 @@ class GameOfLife(Qt.QWidget):
                     if (j+self.renderY, i+self.renderX) in cell.coords:
                         #might be more efficient to iterate over set instead of having this if statement^
                         qp.fillRect(self.renderRects[j][i], Qt.QColor(cell.color))
-
-        if self.mouseMode == self.mousePlaceMode:
-            for coords in self.lifeformOutline:
-                if coords[0] >= 0 and coords[0] < self.renderHeight and coords[1] >= 0 and coords[1] < self.renderWidth:
-                    qp.fillRect(self.renderRects[coords[0]][coords[1]], self.c2)
-
-        #Draw mouse placing lifeform outline
             
 
     def zoom(self, zoomIn):
@@ -353,7 +347,6 @@ class GameOfLife(Qt.QWidget):
 
     def stopTimer(self):
         self.timer.stop()
-       
                 
     def resizeEvent(self, e):
         self.defineRenderRegion()
@@ -363,3 +356,27 @@ class GameOfLife(Qt.QWidget):
         self.genCount = 0
         self.coords = set()
         self.update()
+
+    def setMouseMode(self, mode):
+        self.mouseMode = mode
+        if self.mouseMode == 0: #edit
+            self.drawMode = self.editDrawMode
+        elif self.mouseMode == 1: #Select
+            self.drawMode = self.selectDrawMode
+            pass
+        elif self.mouseMode == 2:
+            self.drawMode = self.placeDrawMode
+
+    def editDrawMode:
+         #TODO: indicate action that will happen upon clicking
+        pass
+        
+    def placeDrawMode(self, qp):
+        for coords in self.lifeformOutline:
+            if coords[0] >= 0 and coords[0] < self.renderHeight and \
+               coords[1] >= 0 and coords[1] < self.renderWidth:
+                qp.fillRect(self.renderRects[coords[0]][coords[1]], self.c2)
+
+    def selectDrawMode(self, qp):
+        pass
+        

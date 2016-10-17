@@ -8,7 +8,6 @@ class mainWindow(Qt.QMainWindow):
     Main window contains the main GoL widget and toolbar options
     """
     def __init__(self):
-        #TODO: reimpliment mouse editing modes
         #TODO: implement toolbar functions
         #TODO: implement mutations
         #TODO: change timer scale to better control time frames of interest
@@ -18,6 +17,12 @@ class mainWindow(Qt.QMainWindow):
 
         self.timer_button.clicked.connect(self.gol.toggleTimer)
         self.timer_slider.valueChanged.connect(self.gol.changeTimerSpeed)
+        self.mouse_mode_tab.currentChanged.connect(self.gol.setMouseMode)
+        self.lf_selection.addItem('Clipboard')
+        self.lf_selection.addItems(sorted(list(self.gol.zoo.species.keys())))
+        Qt.QObject.connect(self.lf_selection, Qt.SIGNAL("activated(QString)"),
+                               self.gol.zoo.setSpecies)
+        #self.lf_selection.activated.connect(self.gol.zoo.setSpecies)
         
         self.horizontalLayout.insertWidget(0, self.gol)
         #TODO: put widget in qt designer and have it inherit from both designer and python code
@@ -26,9 +31,6 @@ class mainWindow(Qt.QMainWindow):
         #self.setCentralWidget(self.gol)
         self.initUI()
         self.show()
-
-    def slot1(self, arg):
-        print(arg)
 
     def initUI(self):
         pass

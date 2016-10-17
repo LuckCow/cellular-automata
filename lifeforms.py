@@ -61,5 +61,6 @@ class Lifeforms():
         return translatedSet
 
     def setSpecies(self, sel):
+        print(sel)
         self.selection = sel
         self.setPoints = self.species[sel]
