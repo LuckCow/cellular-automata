@@ -367,9 +367,18 @@ class GameOfLife(Qt.QWidget):
         elif self.mouseMode == 2:
             self.drawMode = self.placeDrawMode
 
-    def editDrawMode:
+    def editMoveMode(self, row, col):
+        self.mousePosition = [row, col]
+        self.update()
+
+    def placeMoveMode(self, row, col):
+        self.lifeformOutline = self.zoo.getLifeformSet(row, col, 0, 0)
+        self.update()
+            
+    def editDrawMode(self, qp):
          #TODO: indicate action that will happen upon clicking
-        pass
+        qp.fillRect(self.renderRects[self.mousePosition[0]][self.mousePosition[1]], self.c1)
+        
         
     def placeDrawMode(self, qp):
         for coords in self.lifeformOutline:
