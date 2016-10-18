@@ -13,11 +13,11 @@ class CellSet:
             self.color = color
         
         if not sprange:
-            self.spawn_range = sorted([normalvariate(3,0.5), normalvariate(3,0.5)])
+            self.spawn_range = sorted([round(normalvariate(3,0.5)), round(normalvariate(3,0.5))])
         else:
             self.spawn_range = sprange
         if not srrange:
-            self.survive_range = sorted([normalvariate(2,1), normalvariate(3,1)])
+            self.survive_range = sorted([round(normalvariate(2,1.25)), round(normalvariate(3,1.25))])
         else:
             self.survive_range = srrange
         print("spawn range: {}, survive range: {}".format(self.spawn_range, self.survive_range))

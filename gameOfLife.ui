@@ -46,7 +46,7 @@
             <string>Cell Type</string>
            </property>
           </widget>
-          <widget class="QComboBox" name="comboBox">
+          <widget class="QComboBox" name="ct_selection">
            <property name="geometry">
             <rect>
              <x>60</x>
@@ -55,16 +55,6 @@
              <height>33</height>
             </rect>
            </property>
-           <item>
-            <property name="text">
-             <string>Cell Type 1</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>CT2</string>
-            </property>
-           </item>
           </widget>
           <widget class="QPushButton" name="pushButton">
            <property name="geometry">
@@ -518,8 +508,25 @@
   </action>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>ct_selection</sender>
+   <signal>activated(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setCellType()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>130</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>303</x>
+     <y>123</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <slots>
-  <slot>slot1()</slot>
+  <slot>setCellType()</slot>
  </slots>
 </ui>

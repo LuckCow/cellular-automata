@@ -112,6 +112,9 @@ class GameOfLife(Qt.QWidget):
 
         self.rightPressed = False
 
+        self.mousePosition = [0, 0]
+        self.moveMode = self.placeMoveMode
+
     def doGeneration(self): #TODO: add cell deletion with global overpopulation
         #TODO: add mutation 
         #Moves the state to next generation
@@ -193,9 +196,8 @@ class GameOfLife(Qt.QWidget):
     def mouseMoveEvent(self, e):
         row, col = self.getIndex((e.y(),e.x()))
         
-        if self.mouseMode == self.mousePlaceMode:
-            self.lifeformOutline = self.zoo.getLifeformSet(row, col, 0, 0)
-            self.update()
+        self.moveMode(row, col)
+        
         if self.rightPressed: #Pan
             dx = e.x() - self.lastMouseX
             dy = e.y() - self.lastMouseY
@@ -360,24 +362,34 @@ class GameOfLife(Qt.QWidget):
     def setMouseMode(self, mode):
         self.mouseMode = mode
         if self.mouseMode == 0: #edit
+            self.moveMode = self.editMoveMode
             self.drawMode = self.editDrawMode
         elif self.mouseMode == 1: #Select
+            self.moveMode = self.selectMoveMode
             self.drawMode = self.selectDrawMode
-            pass
-        elif self.mouseMode == 2:
+        elif self.mouseMode == 2: #Place
+            self.moveMode = self.placeMoveMode
             self.drawMode = self.placeDrawMode
 
     def editMoveMode(self, row, col):
         self.mousePosition = [row, col]
         self.update()
 
+    def selectMoveMode(self, row, col):
+        #TODO: update selection rectangle as it is dragged
+        pass
+
     def placeMoveMode(self, row, col):
         self.lifeformOutline = self.zoo.getLifeformSet(row, col, 0, 0)
         self.update()
             
     def editDrawMode(self, qp):
-         #TODO: indicate action that will happen upon clicking
-        qp.fillRect(self.renderRects[self.mousePosition[0]][self.mousePosition[1]], self.c1)
+        #TODO: indicate whether cell will be created/destroyed
+        #TODO: Indicate result of dragging selection
+        row, col = tuple(self.mousePosition)
+        if row >= 0 and row < self.renderHeight and \
+           col >= 0 and col < self.renderWidth:
+            qp.fillRect(self.renderRects[row][col], self.c2)
         
         
     def placeDrawMode(self, qp):
@@ -388,4 +400,9 @@ class GameOfLife(Qt.QWidget):
 
     def selectDrawMode(self, qp):
         pass
-        
+
+    def setCellType(self, sel):
+        self.cellSetsSelection = sel
+
+    def addCellType(self):#TODO: add ARGS
+        self.cellSets.append(CellSet())
