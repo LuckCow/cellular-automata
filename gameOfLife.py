@@ -101,6 +101,8 @@ class GameOfLife(Qt.QWidget):
         self.genCount = 0
         self.c = Qt.Qt.darkCyan
         self.c2 = Qt.Qt.cyan
+        self.selectionColor = Qt.QColor(223, 145, 0, 100)
+        self.selectingColor = Qt.QColor(223, 145, 0, 64)
 
         self.zoo = Lifeforms()
         self.lifeformOutline = self.zoo.setPoints
@@ -116,6 +118,7 @@ class GameOfLife(Qt.QWidget):
 
         self.rightPressed = False
         self.leftPressed = False
+        self.selection = None
         self.editMode = Edit.toggle
         self.mousePosition = [0, 0]
 
@@ -204,8 +207,8 @@ class GameOfLife(Qt.QWidget):
             elif self.mouseMode == Mode.place:
                 self.mousePlace(row, col)
             elif self.mouseMode == Mode.select:
-                pass
-                #TODO: Implement Select
+                self.mouseSelect(row, col)
+            self.leftPressed = False
         elif e.button() == 2:
             self.rightPressed = False
         else:
@@ -242,6 +245,10 @@ class GameOfLife(Qt.QWidget):
     def mousePlace(self, row, col):
         form = self.zoo.getLifeformSet(row, col, self.renderY, self.renderX)
         self.cellSets[self.cellSetsSelection].coords.update(form)
+
+    def mouseSelect(self, row, col):
+        self.selection = (min(self.pressRow, row), max(self.pressRow, row),
+                          min(self.pressCol, col), max(self.pressCol, col))
         
     def wheelEvent(self, e):
         if e.delta() > 0:
@@ -282,9 +289,6 @@ class GameOfLife(Qt.QWidget):
 
         self.defineRenderRegion()
         self.update()
-        
-
-
             
     def paintEvent(self, e):
         qp = Qt.QPainter()
@@ -310,6 +314,15 @@ class GameOfLife(Qt.QWidget):
             for point in form:
                 if 0 <= point[1] < self.renderWidth and 0 <= point[0] < self.renderHeight:
                     qp.fillRect(self.renderRects[point[0]][point[1]], self.c2)
+        elif self.mouseMode == Mode.select:
+            if not self.leftPressed:
+                for i in range(self.selection[0], self.selection[1]):
+                    for j in range(self.selection[2], self.selection[3]):
+                        qp.fillRect(self.renderRects[i][j], self.selectionColor)
+            else:
+                for i in range(*sorted([self.pressRow, self.mousePosition[0]])):
+                    for j in range(*sorted([self.pressCol, self.mousePosition[1]])):
+                        qp.fillRect(self.renderRects[i][j], self.selectingColor)
 
     def zoom(self, zoomIn):
         #Zoom changes the size of the rendered squares: smaller squares means more are rendered
