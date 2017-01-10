@@ -3,6 +3,7 @@ from random import normalvariate, randint
 class CellSet:
     def __init__(self, init_set=None, sprange=None, srrange=None, color=None):
         self.coords = set()
+        self.nextGen = set()
         if init_set:
             self.coords.update(init_set)
         self.gen_count = 0
@@ -22,6 +23,7 @@ class CellSet:
             self.survive_range = srrange
         print("spawn range: {}, survive range: {}".format(self.spawn_range, self.survive_range))
 
-    def update_coords(self, new_set):
+    def update_coords(self):
         self.gen_count += 1
-        self.coords = new_set
+        self.coords = self.nextGen.copy()
+        self.nextGen = set()

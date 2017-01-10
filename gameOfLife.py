@@ -49,6 +49,7 @@ from PyQt4 import Qt
 import sys
 from lifeforms import Lifeforms
 from enum import IntEnum
+from collections import defaultdict
 import random
 from cellset import CellSet
 
@@ -127,29 +128,31 @@ class GameOfLife(Qt.QWidget):
         #TODO: add mutation 
         #Moves the state to next generation
         activeSet = set() #Set of all dead cells that could change (ie neighbors of living cells)
-        nextGen = set()
+        allCells = self.getLivingCells()
         
-        for cell in self.cellSets:
-            #First find set of coordinates that could change (adjacent to living cell)
-            for i in cell.coords:
-                activeSet.update(self.getNeighborSet(i))
-            activeSet.difference_update(cell.coords) #Subtract live cells from neighbors
-        
-            for i in activeSet:
-                if cell.spawn_range[0] <= self.countLiveNeighbors(i) <= cell.spawn_range[1]:
-                    nextGen.add(i)
+        #First find set of coordinates that could change (adjacent to living cell)
+        for i in allCells:
+            activeSet.update(self.getNeighborSet(i))
                 
+        for i in activeSet:
+            contenders = defaultdict(list)
+            for cell in self.cellSets:
+                if cell.spawn_range[0] <= self.countLiveNeighbors(i, allCells) <= cell.spawn_range[1]:
+                    contenders[self.countLiveNeighbors(i, cell.coords)].append(cell)
+            if contenders:
+                random.choice(contenders[max(contenders)]).nextGen.add(i)
+
+        for cell in self.cellSets:
             for i in cell.coords: #iterate through currently living cells
-                neighbours = self.countLiveNeighbors(i)
+                neighbours = self.countLiveNeighbors(i, allCells)
                 if cell.survive_range[0] <= neighbours <= cell.survive_range[1]:
                     if not self.overpopulation or random.random() > 0.05:
-                        nextGen.add(i)
-            cell.coords = nextGen.copy() #copy nextGen into current set
-            activeSet = set()
-            nextGen = set()
-        self.genCount +=1
+                        cell.nextGen.add(i)
+            cell.update_coords()
+
+        self.genCount += 1
         if self.genCount % 25 == 0:
-            print('Total Population: {} @ Generation: {}'.format(len(self.getLivingCells()),self.genCount))
+            print('Total Population: {} @ Generation: {}'.format(len(allCells), self.genCount))
 
     def getNeighborSet(self, coordPoint):
         retSet = set()
@@ -166,10 +169,8 @@ class GameOfLife(Qt.QWidget):
             retSet.update(celltype.coords)
         return retSet
             
-        
-    def countLiveNeighbors(self, point):
-        coords = self.getLivingCells()
-        return len(coords.intersection(self.getNeighborSet(point)))
+    def countLiveNeighbors(self, point, allCells):
+        return len(allCells.intersection(self.getNeighborSet(point)))
 
     def getIndex(self, coords):
         #Coords are (y, x)
