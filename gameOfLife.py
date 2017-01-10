@@ -118,7 +118,7 @@ class GameOfLife(Qt.QWidget):
 
         self.rightPressed = False
         self.leftPressed = False
-        self.selection = None
+        self.selection = (0, 0, 0, 0)
         self.editMode = Edit.toggle
         self.mousePosition = [0, 0]
 
@@ -247,8 +247,8 @@ class GameOfLife(Qt.QWidget):
         self.cellSets[self.cellSetsSelection].coords.update(form)
 
     def mouseSelect(self, row, col):
-        self.selection = (min(self.pressRow, row), max(self.pressRow, row),
-                          min(self.pressCol, col), max(self.pressCol, col))
+        self.selection = (min(self.pressRow, row), max(self.pressRow, row)+1,
+                          min(self.pressCol, col), max(self.pressCol, col)+1)
         
     def wheelEvent(self, e):
         if e.delta() > 0:
@@ -320,8 +320,10 @@ class GameOfLife(Qt.QWidget):
                     for j in range(self.selection[2], self.selection[3]):
                         qp.fillRect(self.renderRects[i][j], self.selectionColor)
             else:
-                for i in range(*sorted([self.pressRow, self.mousePosition[0]])):
-                    for j in range(*sorted([self.pressCol, self.mousePosition[1]])):
+                for i in range(min(self.pressRow, self.mousePosition[0]),
+                               max(self.pressRow, self.mousePosition[0]) + 1):
+                    for j in range(min(self.pressCol, self.mousePosition[1]),
+                                   max(self.pressCol, self.mousePosition[1]) + 1):
                         qp.fillRect(self.renderRects[i][j], self.selectingColor)
 
     def zoom(self, zoomIn):
