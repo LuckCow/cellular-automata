@@ -184,7 +184,7 @@ class GameOfLife(Qt.QWidget):
             self.rightPressed = True
             self.lastMouseX = e.x()
             self.lastMouseY = e.y()
-        elif e.button() == 1: #Right mouse button: for selecting
+        elif e.button() == 1: #Left mouse button: for selecting
             self.leftPressed = True
             self.lastMouseX = e.x()
             self.lastMouseY = e.y()
@@ -284,20 +284,7 @@ class GameOfLife(Qt.QWidget):
         self.update()
         
 
-    def panBoard(self, direc, scale=None): #arrow keys
-        #Older function: could use panSquares for better functionality
-        if not scale:
-            scale = int(1/float(self.sq * 0.01)) #No particular logic behind this formula
-        ###global Direc
-        if direc == Direc.up:
-            self.renderY -= scale
-        elif direc == Direc.down:
-            self.renderY += scale
-        elif direc == Direc.right:
-            self.renderX += scale
-        elif direc == Direc.left:
-            self.renderX -= scale
-        self.update()
+
             
     def paintEvent(self, e):
         qp = Qt.QPainter()
