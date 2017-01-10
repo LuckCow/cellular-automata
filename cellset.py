@@ -1,7 +1,8 @@
 from random import normalvariate, randint
+from collections import namedtuple
 
 class CellSet:
-    def __init__(self, init_set=None, sprange=None, srrange=None, color=None):
+    def __init__(self, init_set=None, sprange=None, srrange=None, color=None, name='Conway'):
         self.coords = set()
         self.nextGen = set()
         if init_set:
@@ -23,7 +24,14 @@ class CellSet:
             self.survive_range = srrange
         print("spawn range: {}, survive range: {}".format(self.spawn_range, self.survive_range))
 
+        self.name = name
+
     def update_coords(self):
         self.gen_count += 1
         self.coords = self.nextGen.copy()
         self.nextGen = set()
+
+    def getProperties(self):
+        Props = namedtuple('Props', ['surviveRange', 'spawnRange', 'color', 'name']) 
+        return Props(surviveRange=tuple(self.survive_range), spawnRange=tuple(self.spawn_range),
+                     color=self.color, name=self.name)

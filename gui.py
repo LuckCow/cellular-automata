@@ -34,7 +34,8 @@ class mainWindow(Qt.QMainWindow):
         Qt.QObject.connect(self.lf_selection, Qt.SIGNAL("activated(QString)"),
                                self.gol.zoo.setSpecies)
 
-        self.ct_selection.addItems(['1', 'New..'])
+        self.ct_selection.addItems(['Conway', 'New..'])
+        self.name_text.returnPressed.connect(self.editCellName)
         
         self.horizontalLayout.insertWidget(0, self.gol)
         #TODO: put widget in qt designer and have it inherit from both designer and python code
@@ -51,6 +52,28 @@ class mainWindow(Qt.QMainWindow):
             self.gol.addCellType()
             self.ct_selection.insertItem(len(self.gol.cellSets)-1, str(sel+1)+'.')
         self.gol.setCellType(sel)
+        props = self.gol.cellSets[sel].getProperties()
+        self.survive_min.setValue(props.surviveRange[0])
+        self.survive_min.setRange(0, props.surviveRange[1])
+        self.survive_max.setValue(props.surviveRange[1])
+        self.survive_max.setRange(props.surviveRange[0], 8)
+        self.spawn_min.setValue(props.spawnRange[0])
+        self.spawn_min.setRange(1, props.spawnRange[1])
+        self.spawn_max.setValue(props.spawnRange[1])
+        self.spawn_max.setRange(props.spawnRange[0], 8)
+
+        self.name_text.setText(props.name)
+
+        #TODO: enable editing with spin boxes
+        #TODO: encorperate name into cellset class
+        #TODO: add color editing
+        
+
+    def editCellName(self):
+        newName = self.name_text.text()
+        sel = self.ct_selection.currentIndex()
+        self.gol.cellSets[sel].name = newName
+        self.ct_selection.setItemText(self.ct_selection.currentIndex(), newName)
 
     def setEditMode1(self):
         self.gol.editMode = 0

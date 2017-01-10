@@ -61,7 +61,7 @@
             <rect>
              <x>10</x>
              <y>220</y>
-             <width>85</width>
+             <width>51</width>
              <height>27</height>
             </rect>
            </property>
@@ -69,17 +69,145 @@
             <string>New</string>
            </property>
           </widget>
+          <widget class="QLabel" name="label_12">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>70</y>
+             <width>56</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Name:</string>
+           </property>
+          </widget>
+          <widget class="QLineEdit" name="name_text">
+           <property name="geometry">
+            <rect>
+             <x>60</x>
+             <y>70</y>
+             <width>113</width>
+             <height>27</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QSpinBox" name="survive_min">
+           <property name="geometry">
+            <rect>
+             <x>30</x>
+             <y>120</y>
+             <width>48</width>
+             <height>27</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_13">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>100</y>
+             <width>81</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Surive Range:</string>
+           </property>
+          </widget>
+          <widget class="QSpinBox" name="survive_max">
+           <property name="geometry">
+            <rect>
+             <x>110</x>
+             <y>120</y>
+             <width>48</width>
+             <height>27</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_14">
+           <property name="geometry">
+            <rect>
+             <x>90</x>
+             <y>120</y>
+             <width>21</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>to</string>
+           </property>
+          </widget>
+          <widget class="QSpinBox" name="spawn_min">
+           <property name="geometry">
+            <rect>
+             <x>30</x>
+             <y>180</y>
+             <width>48</width>
+             <height>27</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QSpinBox" name="spawn_max">
+           <property name="geometry">
+            <rect>
+             <x>110</x>
+             <y>180</y>
+             <width>48</width>
+             <height>27</height>
+            </rect>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_15">
+           <property name="geometry">
+            <rect>
+             <x>90</x>
+             <y>180</y>
+             <width>21</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>to</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_16">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>160</y>
+             <width>81</width>
+             <height>21</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Spawn Range:</string>
+           </property>
+          </widget>
           <widget class="QPushButton" name="pushButton_2">
            <property name="geometry">
             <rect>
-             <x>100</x>
+             <x>70</x>
              <y>220</y>
-             <width>85</width>
+             <width>51</width>
              <height>27</height>
             </rect>
            </property>
            <property name="text">
-            <string>Edit</string>
+            <string>Delete</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="pushButton_5">
+           <property name="geometry">
+            <rect>
+             <x>130</x>
+             <y>220</y>
+             <width>61</width>
+             <height>27</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Edit Color</string>
            </property>
           </widget>
          </widget>
@@ -218,14 +346,6 @@
             <string>2s</string>
            </property>
           </widget>
-          <zorder>label</zorder>
-          <zorder>timer_button</zorder>
-          <zorder>timer_slider</zorder>
-          <zorder>label_4</zorder>
-          <zorder>label_5</zorder>
-          <zorder>label_6</zorder>
-          <zorder>mouse_mode_tab</zorder>
-          <zorder>mouse_mode_tab</zorder>
          </widget>
         </item>
         <item>
