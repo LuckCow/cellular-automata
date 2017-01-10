@@ -218,6 +218,14 @@
             <string>2s</string>
            </property>
           </widget>
+          <zorder>label</zorder>
+          <zorder>timer_button</zorder>
+          <zorder>timer_slider</zorder>
+          <zorder>label_4</zorder>
+          <zorder>label_5</zorder>
+          <zorder>label_6</zorder>
+          <zorder>mouse_mode_tab</zorder>
+          <zorder>mouse_mode_tab</zorder>
          </widget>
         </item>
         <item>
@@ -264,6 +272,69 @@
             </property>
             <property name="text">
              <string>Mouse Mode: Edit</string>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="edit_toggle">
+            <property name="geometry">
+             <rect>
+              <x>20</x>
+              <y>50</y>
+              <width>85</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Toggle</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+            <property name="autoExclusive">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="edit_fill">
+            <property name="geometry">
+             <rect>
+              <x>20</x>
+              <y>90</y>
+              <width>85</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Fill</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="autoExclusive">
+             <bool>true</bool>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="edit_erase">
+            <property name="geometry">
+             <rect>
+              <x>20</x>
+              <y>130</y>
+              <width>85</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Erase</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="autoExclusive">
+             <bool>true</bool>
             </property>
            </widget>
           </widget>
@@ -364,7 +435,7 @@
              <string>Lifeform:</string>
             </property>
            </widget>
-           <widget class="QPushButton" name="pushButton_3">
+           <widget class="QPushButton" name="lf_cw">
             <property name="geometry">
              <rect>
               <x>10</x>
@@ -377,7 +448,7 @@
              <string>Clockwise</string>
             </property>
            </widget>
-           <widget class="QPushButton" name="pushButton_4">
+           <widget class="QPushButton" name="lf_ccw">
             <property name="geometry">
              <rect>
               <x>100</x>
@@ -390,7 +461,7 @@
              <string>Counter Clock</string>
             </property>
            </widget>
-           <widget class="QPushButton" name="pushButton_5">
+           <widget class="QPushButton" name="lf_vertical">
             <property name="geometry">
              <rect>
               <x>10</x>
@@ -403,7 +474,7 @@
              <string>Vertical</string>
             </property>
            </widget>
-           <widget class="QPushButton" name="pushButton_6">
+           <widget class="QPushButton" name="lf_horizontal">
             <property name="geometry">
              <rect>
               <x>100</x>
@@ -516,8 +587,8 @@
    <slot>setCellType()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>130</x>
-     <y>87</y>
+     <x>171</x>
+     <y>100</y>
     </hint>
     <hint type="destinationlabel">
      <x>303</x>

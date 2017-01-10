@@ -52,12 +52,16 @@ from enum import IntEnum
 import random
 from cellset import CellSet
 
-class Direc(IntEnum):
+class Mode(IntEnum):
     #Used for arrow key panning
-    up = Qt.Qt.Key_Up
-    down = Qt.Qt.Key_Down
-    right = Qt.Qt.Key_Right
-    left = Qt.Qt.Key_Left
+    edit = 0
+    select = 1
+    place = 2
+
+class Edit(IntEnum):
+    toggle = 0
+    fill = 1
+    erase = 2
         
         
 class GameOfLife(Qt.QWidget):
@@ -111,9 +115,10 @@ class GameOfLife(Qt.QWidget):
         self.setMouseTracking(True)
 
         self.rightPressed = False
-
+        self.leftPressed = False
+        self.editMode = Edit.toggle
         self.mousePosition = [0, 0]
-        self.moveMode = self.placeMoveMode
+
 
     def doGeneration(self): #TODO: add cell deletion with global overpopulation
         #TODO: add mutation 
@@ -122,6 +127,7 @@ class GameOfLife(Qt.QWidget):
         nextGen = set()
         
         for cell in self.cellSets:
+            #First find set of coordinates that could change (adjacent to living cell)
             for i in cell.coords:
                 activeSet.update(self.getNeighborSet(i))
             activeSet.difference_update(cell.coords) #Subtract live cells from neighbors
@@ -166,6 +172,9 @@ class GameOfLife(Qt.QWidget):
         #Coords are (y, x)
         return ((coords[0] + self.sq - self.gridOffsetY) // self.sq,
                 (coords[1] + self.sq - self.gridOffsetX) // self.sq) 
+
+    def setMouseMode(self, mode):
+        self.mouseMode = mode
         
     def mousePressEvent(self, e):
         row, col = self.getIndex((e.y(),e.x()))
@@ -175,18 +184,28 @@ class GameOfLife(Qt.QWidget):
             self.rightPressed = True
             self.lastMouseX = e.x()
             self.lastMouseY = e.y()
+        elif e.button() == 1: #Right mouse button: for selecting
+            self.leftPressed = True
+            self.lastMouseX = e.x()
+            self.lastMouseY = e.y()
 
         
     def mouseReleaseEvent(self, e):
         #print('Mouse Pressed:','Button:',e.button(),'x',e.x(),'y',e.y())
         row, col = self.getIndex((e.y(),e.x()))
         if e.button() == 1:
-            if self.mouseMode == self.mouseDrawMode:
-                self.mouseDraw(row, col)
-            elif self.mouseMode == self.mouseEraseMode:
-                self.mouseErase(row, col)
-            else:
+            if self.mouseMode == Mode.edit:
+                if self.editMode == Edit.toggle:
+                    self.mouseDraw(row, col)
+                elif self.editMode == Edit.fill:
+                    self.mouseFill(row, col)
+                elif self.editMode == Edit.erase:
+                    self.mouseErase(row, col)
+            elif self.mouseMode == Mode.place:
                 self.mousePlace(row, col)
+            elif self.mouseMode == Mode.select:
+                pass
+                #TODO: Implement Select
         elif e.button() == 2:
             self.rightPressed = False
         else:
@@ -195,9 +214,8 @@ class GameOfLife(Qt.QWidget):
 
     def mouseMoveEvent(self, e):
         row, col = self.getIndex((e.y(),e.x()))
-        
-        self.moveMode(row, col)
-        
+        self.mousePosition = [row, col]
+        self.update()
         if self.rightPressed: #Pan
             dx = e.x() - self.lastMouseX
             dy = e.y() - self.lastMouseY
@@ -298,7 +316,13 @@ class GameOfLife(Qt.QWidget):
                     if (j+self.renderY, i+self.renderX) in cell.coords:
                         #might be more efficient to iterate over set instead of having this if statement^
                         qp.fillRect(self.renderRects[j][i], Qt.QColor(cell.color))
-            
+
+    def drawMode(self, qp):
+        if self.mouseMode == Mode.place:
+            form = self.zoo.getLifeformSet(self.mousePosition[0], self.mousePosition[1], 0, 0)
+            for point in form:
+                if 0 <= point[1] < self.renderWidth and 0 <= point[0] < self.renderHeight:
+                    qp.fillRect(self.renderRects[point[0]][point[1]], self.c2)
 
     def zoom(self, zoomIn):
         #Zoom changes the size of the rendered squares: smaller squares means more are rendered
@@ -358,48 +382,6 @@ class GameOfLife(Qt.QWidget):
         self.genCount = 0
         self.coords = set()
         self.update()
-
-    def setMouseMode(self, mode):
-        self.mouseMode = mode
-        if self.mouseMode == 0: #edit
-            self.moveMode = self.editMoveMode
-            self.drawMode = self.editDrawMode
-        elif self.mouseMode == 1: #Select
-            self.moveMode = self.selectMoveMode
-            self.drawMode = self.selectDrawMode
-        elif self.mouseMode == 2: #Place
-            self.moveMode = self.placeMoveMode
-            self.drawMode = self.placeDrawMode
-
-    def editMoveMode(self, row, col):
-        self.mousePosition = [row, col]
-        self.update()
-
-    def selectMoveMode(self, row, col):
-        #TODO: update selection rectangle as it is dragged
-        pass
-
-    def placeMoveMode(self, row, col):
-        self.lifeformOutline = self.zoo.getLifeformSet(row, col, 0, 0)
-        self.update()
-            
-    def editDrawMode(self, qp):
-        #TODO: indicate whether cell will be created/destroyed
-        #TODO: Indicate result of dragging selection
-        row, col = tuple(self.mousePosition)
-        if row >= 0 and row < self.renderHeight and \
-           col >= 0 and col < self.renderWidth:
-            qp.fillRect(self.renderRects[row][col], self.c2)
-        
-        
-    def placeDrawMode(self, qp):
-        for coords in self.lifeformOutline:
-            if coords[0] >= 0 and coords[0] < self.renderHeight and \
-               coords[1] >= 0 and coords[1] < self.renderWidth:
-                qp.fillRect(self.renderRects[coords[0]][coords[1]], self.c2)
-
-    def selectDrawMode(self, qp):
-        pass
 
     def setCellType(self, sel):
         self.cellSetsSelection = sel

@@ -14,11 +14,21 @@ class mainWindow(Qt.QMainWindow):
         super(mainWindow, self).__init__()
         uic.loadUi('gameOfLife.ui', self)
         self.gol = GameOfLife()
-
+        
         self.timer_button.clicked.connect(self.gol.toggleTimer)
         self.timer_slider.valueChanged.connect(self.gol.changeTimerSpeed)
         self.mouse_mode_tab.currentChanged.connect(self.gol.setMouseMode)
+        self.edit_toggle.pressed.connect(self.setEditMode1)
+        self.edit_fill.clicked.connect(self.setEditMode2)
+        self.edit_erase.clicked.connect(self.setEditMode3)
+
+        
         self.gol.setMouseMode(self.mouse_mode_tab.currentIndex())
+
+        self.lf_cw.pressed.connect(self.gol.zoo.rotateRight)
+        self.lf_ccw.pressed.connect(self.gol.zoo.rotateLeft)
+        self.lf_horizontal.pressed.connect(self.gol.zoo.flipHorizontal)
+        self.lf_vertical.pressed.connect(self.gol.zoo.flipVertical)
         self.lf_selection.addItem('Clipboard')
         self.lf_selection.addItems(sorted(list(self.gol.zoo.species.keys())))
         Qt.QObject.connect(self.lf_selection, Qt.SIGNAL("activated(QString)"),
@@ -26,11 +36,8 @@ class mainWindow(Qt.QMainWindow):
 
         self.ct_selection.addItems(['1', 'New..'])
         
-        
-        
         self.horizontalLayout.insertWidget(0, self.gol)
         #TODO: put widget in qt designer and have it inherit from both designer and python code
-        
         #self.gol.setFocusPolicy(Qt.Qt.StrongFocus)
         #self.setCentralWidget(self.gol)
         self.initUI()
@@ -46,10 +53,17 @@ class mainWindow(Qt.QMainWindow):
             self.ct_selection.insertItem(len(self.gol.cellSets)-1, str(sel+1)+'.')
         self.gol.setCellType(sel)
 
+    def setEditMode1(self):
+        self.gol.editMode = 0
+    def setEditMode2(self):
+        self.gol.editMode = 1
+    def setEditMode3(self):
+        self.gol.editMode = 2
+    
+        
 def main():
     app = Qt.QApplication(sys.argv)
     w = mainWindow()
-    
     sys.exit(app.exec_())
         
 if __name__ == '__main__':
