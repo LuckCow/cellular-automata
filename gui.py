@@ -47,7 +47,6 @@ class mainWindow(Qt.QMainWindow):
         pass
 
     def setCellType(self, sel):
-        print(sel)
         if sel == len(self.gol.cellSets):
             self.gol.addCellType()
             self.ct_selection.insertItem(len(self.gol.cellSets)-1, str(sel+1)+'.')

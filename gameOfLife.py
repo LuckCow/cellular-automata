@@ -106,7 +106,7 @@ class GameOfLife(Qt.QWidget):
         self.lifeformOutline = self.zoo.setPoints
         self.defineRenderRegion()
 
-        self.cellSets = [CellSet(None, [3,3] ,[2,3], Qt.Qt.darkCyan), ]
+        self.cellSets = [CellSet(None, [3,3] ,[2,3], Qt.Qt.darkCyan) ]
         self.cellSetsSelection = 0
 
         self.overpopulation = False
@@ -196,9 +196,9 @@ class GameOfLife(Qt.QWidget):
         if e.button() == 1:
             if self.mouseMode == Mode.edit:
                 if self.editMode == Edit.toggle:
-                    self.mouseDraw(row, col)
+                    self.mouseDraw(row, col, True)
                 elif self.editMode == Edit.fill:
-                    self.mouseFill(row, col)
+                    self.mouseDraw(row, col, False)
                 elif self.editMode == Edit.erase:
                     self.mouseErase(row, col)
             elif self.mouseMode == Mode.place:
@@ -223,11 +223,11 @@ class GameOfLife(Qt.QWidget):
             self.lastMouseX = e.x()
             self.lastMouseY = e.y()
             
-    def mouseDraw(self, row, col):
+    def mouseDraw(self, row, col, toggle):
         for i in range(min(self.pressRow, row), max(self.pressRow, row)+1):
             for j in range(min(self.pressCol, col), max(self.pressCol, col)+1):
                 p = (i+self.renderY,j+self.renderX)
-                if p in self.cellSets[self.cellSetsSelection].coords:
+                if p in self.cellSets[self.cellSetsSelection].coords and toggle:
                     self.cellSets[self.cellSetsSelection].coords.remove(p)
                 else:
                     self.cellSets[self.cellSetsSelection].coords.add(p)
@@ -355,7 +355,6 @@ class GameOfLife(Qt.QWidget):
 
     def changeTimerSpeed(self, val):
         self.timerSpeed = val
-        print(self.timerSpeed)
         if self.timer.isActive():
             self.stopTimer()
             self.startTimer()
