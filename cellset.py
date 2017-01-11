@@ -1,8 +1,8 @@
-from random import normalvariate, randint
+from random import normalvariate, randint, choice
 from collections import namedtuple
 
 class CellSet:
-    def __init__(self, init_set=None, sprange=None, srrange=None, color=None, name='Conway'):
+    def __init__(self, init_set=None, sprange=None, srrange=None, color=None, name=None):
         self.coords = set()
         self.nextGen = set()
         if init_set:
@@ -24,7 +24,11 @@ class CellSet:
             self.survive_range = srrange
         print("spawn range: {}, survive range: {}".format(self.spawn_range, self.survive_range))
 
-        self.name = name
+        if not name:
+            self.name = choice(['Charlotte', 'Raleigh', 'Greenboro', 'Durham', 'Cary',
+                                'Concord', 'Gastonia', 'Cornelius', 'Carrboro', 'Boone'])
+        else:
+            self.name = name
 
     def update_coords(self):
         self.gen_count += 1

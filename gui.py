@@ -34,8 +34,10 @@ class mainWindow(Qt.QMainWindow):
         Qt.QObject.connect(self.lf_selection, Qt.SIGNAL("activated(QString)"),
                                self.gol.zoo.setSpecies)
 
-        self.ct_selection.addItems(['Conway', 'New..'])
+        self.ct_selection.addItems(['Conway'])
+        self.setCellType(0)
         self.name_text.returnPressed.connect(self.editCellName)
+        self.new_cell.pressed.connect(self.addCellType)
         
         self.horizontalLayout.insertWidget(0, self.gol)
         #TODO: put widget in qt designer and have it inherit from both designer and python code
@@ -47,10 +49,15 @@ class mainWindow(Qt.QMainWindow):
     def initUI(self):
         pass
 
+    def addCellType(self):
+        sel = len(self.gol.cellSets)
+        self.gol.addCellType()
+        self.gol.setCellType(sel)
+        self.setCellType(sel)
+        self.ct_selection.insertItem(sel, self.gol.cellSets[sel].name)
+        self.ct_selection.setCurrentIndex(sel)
+        
     def setCellType(self, sel):
-        if sel == len(self.gol.cellSets):
-            self.gol.addCellType()
-            self.ct_selection.insertItem(len(self.gol.cellSets)-1, str(sel+1)+'.')
         self.gol.setCellType(sel)
         props = self.gol.cellSets[sel].getProperties()
         self.survive_min.setValue(props.surviveRange[0])

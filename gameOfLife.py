@@ -109,7 +109,7 @@ class GameOfLife(Qt.QWidget):
         self.lifeformOutline = self.zoo.setPoints
         self.defineRenderRegion()
 
-        self.cellSets = [CellSet(None, [3,3] ,[2,3], Qt.Qt.darkCyan) ]
+        self.cellSets = [CellSet(None, [3,3] ,[2,3], Qt.Qt.darkCyan, 'Conway')]
         self.cellSetsSelection = 0
 
         self.overpopulation = False
@@ -138,9 +138,12 @@ class GameOfLife(Qt.QWidget):
             contenders = defaultdict(list)
             for cell in self.cellSets:
                 if cell.spawn_range[0] <= self.countLiveNeighbors(i, allCells) <= cell.spawn_range[1]:
-                    contenders[self.countLiveNeighbors(i, cell.coords)].append(cell)
+                    influence = self.countLiveNeighbors(i, cell.coords)
+                    if influence > 0:
+                        contenders[influence].append(cell)
             if contenders:
                 random.choice(contenders[max(contenders)]).nextGen.add(i)
+                #TODO: remove from other pools
 
         for cell in self.cellSets:
             for i in cell.coords: #iterate through currently living cells
