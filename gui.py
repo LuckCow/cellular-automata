@@ -8,8 +8,10 @@ class mainWindow(Qt.QMainWindow):
     Main window contains the main GoL widget and toolbar options
     """
     def __init__(self):
+        #TODO: Implement copy and paste
+        #TODO: implement saving
+        #TODO: implement erase all
         #TODO: implement toolbar functions
-        #TODO: implement mutations
         #TODO: change timer scale to better control time frames of interest
         super(mainWindow, self).__init__()
         uic.loadUi('gameOfLife.ui', self)
@@ -40,7 +42,7 @@ class mainWindow(Qt.QMainWindow):
         self.new_cell.pressed.connect(self.addCellType)
         
         self.horizontalLayout.insertWidget(0, self.gol)
-        #TODO: put widget in qt designer and have it inherit from both designer and python code
+
         #self.gol.setFocusPolicy(Qt.Qt.StrongFocus)
         #self.setCentralWidget(self.gol)
         self.initUI()
@@ -68,12 +70,10 @@ class mainWindow(Qt.QMainWindow):
         self.spawn_min.setRange(1, props.spawnRange[1])
         self.spawn_max.setValue(props.spawnRange[1])
         self.spawn_max.setRange(props.spawnRange[0], 8)
-
         self.name_text.setText(props.name)
 
         #TODO: enable editing with spin boxes
-        #TODO: encorperate name into cellset class
-        #TODO: add color editing
+        #TODO: add color display and editing
         
 
     def editCellName(self):

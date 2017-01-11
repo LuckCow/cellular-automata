@@ -3,6 +3,8 @@ from collections import namedtuple
 
 class CellSet:
     def __init__(self, init_set=None, sprange=None, srrange=None, color=None, name=None):
+        self.namePool = ['Charlotte', 'Raleigh', 'Greenboro', 'Durham', 'Cary', 'Concord',
+                         'Gastonia', 'Cornelius', 'Carrboro', 'Boone']
         self.coords = set()
         self.nextGen = set()
         if init_set:
@@ -25,8 +27,8 @@ class CellSet:
         print("spawn range: {}, survive range: {}".format(self.spawn_range, self.survive_range))
 
         if not name:
-            self.name = choice(['Charlotte', 'Raleigh', 'Greenboro', 'Durham', 'Cary',
-                                'Concord', 'Gastonia', 'Cornelius', 'Carrboro', 'Boone'])
+            self.name = choice(self.namePool)
+            self.namePool.remove(self.name)
         else:
             self.name = name
 

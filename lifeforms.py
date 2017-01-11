@@ -2,7 +2,7 @@ class Lifeforms():
     """
     Common lifeforms to place
     """
-    
+    #TODO: add associated species
     def __init__(self, sel='glider'):
         self.funcList = {'Flip Horizontal': self.flipHorizontal, 'Flip Vertical': self.flipVertical,
                          'Rotate Right': self.rotateRight, 'Rotate Left': self.rotateLeft}
