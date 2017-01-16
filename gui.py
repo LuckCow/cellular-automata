@@ -33,7 +33,8 @@ class mainWindow(Qt.QMainWindow):
         self.lf_vertical.pressed.connect(self.gol.zoo.flipVertical)
         self.lf_selection.addItem('Clipboard')
         self.lf_selection.addItems(sorted(list(self.gol.zoo.species.keys())))
-        #Qt.QObject.connect(self.lf_selection, Qt.SIGNAL("activated(QString)"), self.gol.zoo.setSpecies)
+        #Qt.connect(self.lf_selection, Qt.SIGNAL("activated(QString)"), self.gol.zoo.setSpecies)
+        self.lf_selection.activated[str].connect(self.gol.zoo.setSpecies)
 
         self.ct_selection.addItems(['Conway'])
         self.setCellType(0)
@@ -41,9 +42,10 @@ class mainWindow(Qt.QMainWindow):
         self.new_cell.pressed.connect(self.addCellType)
 
         for i in range(1, 9):
-            but_str = 'sp{}'.format(i)
-            #exec('self.' + but_str + '.toggled.connect(self.gol.cellSet.types[self.gol.selId]["spawn"].append(i))')
-         
+            exec('self.sp{}.clicked.connect(self.editCellProperties)'.format(i, i))
+            exec('self.sp{}_2.clicked.connect(self.editCellProperties)'.format(i, i))
+
+
         self.horizontalLayout.insertWidget(0, self.gol)
 
 
@@ -86,6 +88,20 @@ class mainWindow(Qt.QMainWindow):
         sel = self.ct_selection.currentIndex()
         self.gol.cellSets[sel].name = newName
         self.ct_selection.setItemText(self.ct_selection.currentIndex(), newName)
+
+    def editCellProperties(self):
+        sel = self.ct_selection.currentIndex()
+        sp = []
+        for i in range(1, 9):
+            exec('if self.sp{}.isChecked(): sp.append({})'.format(i, i))
+        self.gol.cellSet.types[sel]['spawn'] = sp
+
+        sr = []
+        for i in range(1, 9):
+            exec('if self.sp{}_2.isChecked(): sr.append({})'.format(i, i))
+        self.gol.cellSet.types[sel]['survive'] = sr
+        print(sr)
+
 
     def setEditMode1(self):
         self.gol.editMode = 0
