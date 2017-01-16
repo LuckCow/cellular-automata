@@ -52,7 +52,7 @@ class mainWindow(Qt.QMainWindow):
         pass
 
     def addCellType(self):
-        sel = len(self.gol.cellSets)
+        sel = len(self.gol.cellSet.types)
         self.gol.addCellType()
         self.gol.setCellType(sel)
         self.setCellType(sel)
@@ -60,8 +60,10 @@ class mainWindow(Qt.QMainWindow):
         self.ct_selection.setCurrentIndex(sel)
         
     def setCellType(self, sel):
+        pass
+        '''
         self.gol.setCellType(sel)
-        props = self.gol.cellSets[sel].getProperties()
+        props = self.gol.cellSet.types[sel].getProperties()
         self.survive_min.setValue(props.surviveRange[0])
         self.survive_min.setRange(0, props.surviveRange[1])
         self.survive_max.setValue(props.surviveRange[1])
@@ -74,7 +76,7 @@ class mainWindow(Qt.QMainWindow):
 
         #TODO: enable editing with spin boxes
         #TODO: add color display and editing
-        
+        '''
 
     def editCellName(self):
         newName = self.name_text.text()

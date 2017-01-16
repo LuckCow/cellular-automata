@@ -99,7 +99,6 @@ class GameOfLife(Qt.QWidget):
         self.cellOffsetX = self.sq/2
         self.cellOffsetY = self.sq/2
         
-        self.genCount = 0
         self.c = Qt.Qt.darkCyan
         self.c2 = Qt.Qt.cyan
         self.selectionColor = Qt.QColor(223, 145, 0, 100)
@@ -109,8 +108,9 @@ class GameOfLife(Qt.QWidget):
         self.lifeformOutline = self.zoo.setPoints
         self.defineRenderRegion()
 
-        self.cellSets = [CellSet(None, [3,3] ,[2,3], Qt.Qt.darkCyan, 'Conway')]
-        self.cellSetsSelection = 0
+        self.cellSet = CellSet()
+        self.cellSet.add_new_type()
+        self.selId = 0
 
         self.overpopulation = False
         #Significant slow down was observed between 1700 and 2800 population count
@@ -123,57 +123,6 @@ class GameOfLife(Qt.QWidget):
         self.editMode = Edit.toggle
         self.mousePosition = [0, 0]
 
-
-    def doGeneration(self): #TODO: add cell deletion with global overpopulation
-        #TODO: add mutation 
-        #Moves the state to next generation
-        activeSet = set() #Set of all dead cells that could change (ie neighbors of living cells)
-        allCells = self.getLivingCells()
-        
-        #First find set of coordinates that could change (adjacent to living cell)
-        for i in allCells:
-            activeSet.update(self.getNeighborSet(i))
-                
-        for i in activeSet:
-            contenders = defaultdict(list)
-            for cell in self.cellSets:
-                if cell.spawn_range[0] <= self.countLiveNeighbors(i, allCells) <= cell.spawn_range[1]:
-                    influence = self.countLiveNeighbors(i, cell.coords)
-                    if influence > 0:
-                        contenders[influence].append(cell)
-            if contenders:
-                random.choice(contenders[max(contenders)]).nextGen.add(i)
-                #TODO: remove from other pools
-
-        for cell in self.cellSets:
-            for i in cell.coords: #iterate through currently living cells
-                neighbours = self.countLiveNeighbors(i, allCells)
-                if cell.survive_range[0] <= neighbours <= cell.survive_range[1]:
-                    if not self.overpopulation or random.random() > 0.05:
-                        cell.nextGen.add(i)
-            cell.update_coords()
-
-        self.genCount += 1
-        if self.genCount % 25 == 0:
-            print('Total Population: {} @ Generation: {}'.format(len(allCells), self.genCount))
-
-    def getNeighborSet(self, coordPoint):
-        retSet = set()
-        for i in range(-1,2):
-            for j in range(-1,2):
-                p = (coordPoint[0]+i, coordPoint[1]+j)
-                retSet.add(p)
-        retSet.remove(coordPoint)
-        return retSet
-
-    def getLivingCells(self):
-        retSet = set()
-        for celltype in self.cellSets:
-            retSet.update(celltype.coords)
-        return retSet
-            
-    def countLiveNeighbors(self, point, allCells):
-        return len(allCells.intersection(self.getNeighborSet(point)))
 
     def getIndex(self, coords):
         #Coords are (y, x)
@@ -230,23 +179,19 @@ class GameOfLife(Qt.QWidget):
             self.lastMouseX = e.x()
             self.lastMouseY = e.y()
             
-    def mouseDraw(self, row, col, toggle):
+    def mouseDraw(self, row, col, override):
         for i in range(min(self.pressRow, row), max(self.pressRow, row)+1):
             for j in range(min(self.pressCol, col), max(self.pressCol, col)+1):
                 p = (i+self.renderY,j+self.renderX)
-                if p in self.cellSets[self.cellSetsSelection].coords and toggle:
-                    self.cellSets[self.cellSetsSelection].coords.remove(p)
-                else:
-                    self.cellSets[self.cellSetsSelection].coords.add(p)
+                self.cellSet.add_cell(p, self.selId, override)
                         
     def mouseErase(self, row, col):
         for i in range(min(self.pressRow, row), max(self.pressRow, row)+1):
             for j in range(min(self.pressCol, col), max(self.pressCol, col)+1):
                 p = (i+self.renderY,j+self.renderX)
-                if p in self.cellSets[self.cellSetsSelection].coords:
-                    self.cellSets[self.cellSetsSelection].coords.remove(p)
+                self.cellSet.remove_cell(p, None) #Change to only delete selected type
 
-    def mousePlace(self, row, col):
+    def mousePlace(self, row, col): #TODO: UPDATE THIS
         form = self.zoo.getLifeformSet(row, col, self.renderY, self.renderX)
         self.cellSets[self.cellSetsSelection].coords.update(form)
 
@@ -263,7 +208,7 @@ class GameOfLife(Qt.QWidget):
 
     def keyPressEvent(self, e):
         if e.key() == Qt.Qt.Key_Space:
-            self.doGeneration()
+            self.cellSet.doGeneration()
             self.update()
         if e.key() in list(Direc):
             self.panBoard(e.key())
@@ -304,13 +249,12 @@ class GameOfLife(Qt.QWidget):
     def drawBoard(self, qp):
         ##Draw all rectangles (grid)
         #fill living ones with black
-        for cell in self.cellSets:
-            for i in range(0, self.renderWidth):
-                for j in range(0, self.renderHeight):
-                    qp.drawRect(self.renderRects[j][i])
-                    if (j+self.renderY, i+self.renderX) in cell.coords:
-                        #might be more efficient to iterate over set instead of having this if statement^
-                        qp.fillRect(self.renderRects[j][i], Qt.QColor(cell.color))
+        for i in range(0, self.renderWidth):
+            for j in range(0, self.renderHeight):
+                qp.drawRect(self.renderRects[j][i])
+                if (j+self.renderY, i+self.renderX) in self.cellSet.cells:
+                    #might be more efficient to iterate over set instead of having this if statement^
+                    qp.fillRect(self.renderRects[j][i], self.c)#Qt.QColor(self.cellSet.types[cell.cid]['color']))
 
     def drawMode(self, qp):
         if self.mouseMode == Mode.place:
@@ -356,7 +300,7 @@ class GameOfLife(Qt.QWidget):
                 self.renderRects[j][i].translate(self.gridOffsetX - self.sq, self.gridOffsetY - self.sq)
         
     def timerEvent(self, e):
-        self.doGeneration()
+        self.cellSet.doGeneration()
         self.update()
 
     def changeTimerSpeed(self, val):
@@ -384,12 +328,11 @@ class GameOfLife(Qt.QWidget):
 
     def resetGame(self):
         self.stopTimer()
-        self.genCount = 0
-        self.coords = set()
+        self.cellSet.reset()
         self.update()
 
     def setCellType(self, sel):
-        self.cellSetsSelection = sel
+        self.selId = sel
 
     def addCellType(self):#TODO: add ARGS
-        self.cellSets.append(CellSet())
+        self.cellSet.add_new_type()

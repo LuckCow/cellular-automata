@@ -1,43 +1,119 @@
-from random import normalvariate, randint, choice
-from collections import namedtuple
+from random import paretovariate, randint, choice
+from collections import namedtuple, defaultdict, Counter
+
+TypeProperties = namedtuple('TypeProperties', ['color', 'survive', 'spawn'])
+Point = namedtuple('Point', ['y', 'x'])
+
+class Cell():
+    def __init__(self, y, x, cid):
+        self.y, self.x, self.cid = y, x, cid
+
+    def __hash__(self):
+        return hash((self.y, self.x))
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            if self.x == other.x and self.y == other.y:
+                return True
+        elif self.x == other[1] and self.y == other[0]:
+            return True
+        return False
+
+    def __repr__(self):
+        return 'Point object:({}, {}), id:{})'.format(self.y, self.x, self.cid)
+
 
 class CellSet:
-    def __init__(self, init_set=None, sprange=None, srrange=None, color=None, name=None):
+    def __init__(self):
+        self.cells = set()
+        self.types = {}
         self.namePool = ['Charlotte', 'Raleigh', 'Greenboro', 'Durham', 'Cary', 'Concord',
                          'Gastonia', 'Cornelius', 'Carrboro', 'Boone']
-        self.coords = set()
-        self.nextGen = set()
-        if init_set:
-            self.coords.update(init_set)
+        self.id_count = 0
         self.gen_count = 0
-        
+
+    def doGeneration(self):
+        nextGen = set()
+        spawnPossibilities = defaultdict(Counter)
+        for c in self.cells:
+            num_neighbors = 0
+            for i in range(-1,2):
+                for j in range(-1,2):
+                    if not (i == 0 and j == 0):
+                        p = (c.y + i, c.x + j)
+                        spawnPossibilities[p][c.cid] += 1
+                        if p in self.cells:
+                            num_neighbors += 1
+            if num_neighbors in self.types[c.cid]['survive']:
+                nextGen.add(c)
+        for point, id_counter in spawnPossibilities.items():
+            num_neighbors = sum(id_counter.values())
+            for cellid in id_counter.copy():
+                if num_neighbors not in self.types[cellid]['spawn']:
+                    del id_counter[cellid]
+            if id_counter:
+                nextGen.add(Cell(point[0], point[1], id_counter.most_common(1)[0][0]))
+        self.cells = nextGen
+        self.gen_count += 1
+                    
+
+    def add_new_type(self, name=None, color=None, survive=None, spawn=None):
         if not color:
-            self.color = randint(0, 2**24)
-        else:
-            self.color = color
-        
-        if not sprange:
-            self.spawn_range = sorted([round(normalvariate(3,0.5)), round(normalvariate(3,0.5))])
-        else:
-            self.spawn_range = sprange
-        if not srrange:
-            self.survive_range = sorted([round(normalvariate(2,1.25)), round(normalvariate(3,1.25))])
-        else:
-            self.survive_range = srrange
-        print("spawn range: {}, survive range: {}".format(self.spawn_range, self.survive_range))
+            color = randint(0, 2**24)
+
+        #TODO: Add random behavior to defaults
+        if not spawn:
+            spawn = [3]
+
+        if not survive:
+            survive = [2, 3]
 
         if not name:
-            self.name = choice(self.namePool)
-            self.namePool.remove(self.name)
+            name = choice(self.namePool)
+            self.namePool.remove(name)
+
+        self.types[self.id_count] = {'name': name, 'color': color, 'survive': survive, 'spawn': spawn}
+        self.id_count += 1
+
+    def del_type(self, cid):
+        del self.types[cid]
+        for c in self.cells.copy():
+            if c.cid == cid:
+                self.cells.remove(c)
+
+    def update_type(self, cid, name=None, color=None, survive=None, spawn=None):
+        if color:
+            self.types[cid]['color'] = color
+
+        if name:
+            self.types[cid]['name'] = name
+        
+        if spawn:
+            self.types[cid]['spawn'] = spawn
+
+        if survive:
+            self.types[cid]['survive'] = survive
+
+    def remove_cell(self, coord, cid=None):
+        # Removes all cells in specified set of coordinates
+        # Removes only specified cid if given, else it removes all
+        if not cid:
+            self.cells.discard(coord)
         else:
-            self.name = name
+            for c in self.cells:
+                if c.y == coord[0] and c.x == coord[1] and c.cid == cid:
+                    self.cells.remove(c)
+                    break
 
-    def update_coords(self):
-        self.gen_count += 1
-        self.coords = self.nextGen.copy()
-        self.nextGen = set()
+    def add_cell(self, point, type_id, override=False):
+        newPoint = Cell(y=point[0], x=point[1], cid=type_id)
+        if override:
+            self.cells.discard(newPoint)
+        self.cells.add(newPoint)
 
-    def getProperties(self):
-        Props = namedtuple('Props', ['surviveRange', 'spawnRange', 'color', 'name']) 
-        return Props(surviveRange=tuple(self.survive_range), spawnRange=tuple(self.spawn_range),
-                     color=self.color, name=self.name)
+    def reset(self):
+        print('TODO: reset')
+    
+
+
+    #TODO: other non Qt related stuff here
