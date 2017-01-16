@@ -51,7 +51,7 @@ from lifeforms import Lifeforms
 from enum import IntEnum
 from collections import defaultdict
 import random
-from cellset import CellSet
+from cellset import CellSet, Cell
 
 class Mode(IntEnum):
     #Used for arrow key panning
@@ -200,7 +200,11 @@ class GameOfLife(Qt.QWidget):
 
     def copySelection(self):
         sel = set()
-        #TODO: 
+        for cell in self.cellSet.cells:
+            if self.selection[0] <= cell.y < self.selection[1] \
+               and self.selection[2] <= cell.x < self.selection[3]:
+                translatedCell = Cell(cell.y - self.selection[0], cell.x - self.selection[2], cell.cid)
+                sel.add(translatedCell)
         self.zoo.species['Clipboard'] = sel
         
     def wheelEvent(self, e):
@@ -264,10 +268,11 @@ class GameOfLife(Qt.QWidget):
 
     def drawMode(self, qp):
         if self.mouseMode == Mode.place:
-            selColor = Qt.QColor(self.cellSet.types[self.selId]['color'])
-            selColor.setAlpha(155)
-            form = self.zoo.getLifeformSet(self.mousePosition[0], self.mousePosition[1], 0, 0)
+            selColor = Qt.QColor()
+            form = self.zoo.getLifeformSet(self.mousePosition[0], self.mousePosition[1], 0, 0, self.selId)
             for point in form:
+                selColor.setRgb(self.cellSet.types[point.cid]['color'])
+                selColor.setAlpha(155)
                 if 0 <= point[1] < self.renderWidth and 0 <= point[0] < self.renderHeight:
                     qp.fillRect(self.renderRects[point[0]][point[1]], selColor)
         elif self.mouseMode == Mode.select:

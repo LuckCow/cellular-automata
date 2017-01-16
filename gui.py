@@ -31,7 +31,6 @@ class mainWindow(Qt.QMainWindow):
         self.lf_ccw.pressed.connect(self.gol.zoo.rotateLeft)
         self.lf_horizontal.pressed.connect(self.gol.zoo.flipHorizontal)
         self.lf_vertical.pressed.connect(self.gol.zoo.flipVertical)
-        self.lf_selection.addItem('Clipboard')
         self.lf_selection.addItems(sorted(list(self.gol.zoo.species.keys())))
         self.lf_selection.activated[str].connect(self.gol.zoo.setSpecies)
         self.sel_copy.pressed.connect(self.gol.copySelection)
