@@ -68,6 +68,9 @@ class mainWindow(Qt.QMainWindow):
     def setCellType(self, sel):
         self.gol.setCellType(sel)
         props = self.gol.cellSet.types[sel]
+        for i in range(1, 9):
+            exec('self.sp{}.setChecked(i in self.gol.cellSet.types[sel]["spawn"])'.format(i))
+            exec('self.sp{}_2.setChecked(i in self.gol.cellSet.types[sel]["survive"])'.format(i))
         '''
         self.survive_min.setValue(props.surviveRange[0])
         self.survive_min.setRange(0, props.surviveRange[1])
