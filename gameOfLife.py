@@ -260,7 +260,8 @@ class GameOfLife(Qt.QWidget):
             form = self.zoo.getLifeformSet(self.mousePosition[0], self.mousePosition[1], 0, 0)
             for point in form:
                 if 0 <= point[1] < self.renderWidth and 0 <= point[0] < self.renderHeight:
-                    qp.fillRect(self.renderRects[point[0]][point[1]], self.c2)
+                    qp.fillRect(self.renderRects[point[0]][point[1]],
+                                Qt.QColor(self.cellSet.types[self.selId]['color']).lighter())
         elif self.mouseMode == Mode.select:
             if not self.leftPressed:
                 for i in range(self.selection[0], self.selection[1]):
