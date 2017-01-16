@@ -33,8 +33,8 @@ class mainWindow(Qt.QMainWindow):
         self.lf_vertical.pressed.connect(self.gol.zoo.flipVertical)
         self.lf_selection.addItem('Clipboard')
         self.lf_selection.addItems(sorted(list(self.gol.zoo.species.keys())))
-        #Qt.connect(self.lf_selection, Qt.SIGNAL("activated(QString)"), self.gol.zoo.setSpecies)
         self.lf_selection.activated[str].connect(self.gol.zoo.setSpecies)
+        self.sel_copy.pressed.connect(self.gol.copySelection)
 
         self.ct_selection.addItems(['Conway'])
         self.setCellType(0)
@@ -65,7 +65,7 @@ class mainWindow(Qt.QMainWindow):
         self.ct_selection.insertItem(sel, self.gol.cellSet.types[sel]['name'])
         self.ct_selection.setCurrentIndex(sel)
 
-    def delCellType(self):
+    def delCellType(self): #TODO: figure out indexing when a type is deleted
         sel = self.ct_selection.currentIndex()
         self.gol.delCellType(sel)
         self.setCellType(0)

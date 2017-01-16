@@ -58,9 +58,12 @@ class Lifeforms():
     def getLifeformSet(self, row, col, rowOffset, colOffset, cid=None):
         translatedSet = set()
         for coordPair in self.setPoints:
-            x = coordPair[1] + col + colOffset
-            y = coordPair[0] + row + rowOffset
-            translatedSet.add(cellset.Cell(y,x,cid))
+            if type(coordPair) is cellset.Cell:
+                translatedSet.add(coordPair)
+            else:
+                x = coordPair[1] + col + colOffset
+                y = coordPair[0] + row + rowOffset
+                translatedSet.add(cellset.Cell(y,x,cid))
         return translatedSet
 
     def setSpecies(self, sel):

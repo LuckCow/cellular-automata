@@ -194,9 +194,14 @@ class GameOfLife(Qt.QWidget):
             self.cellSet.cells.discard(cell)
             self.cellSet.cells.add(cell)
 
-    def mouseSelect(self, row, col):
-        self.selection = (min(self.pressRow, row), max(self.pressRow, row)+1,
-                          min(self.pressCol, col), max(self.pressCol, col)+1)
+    def mouseSelect(self, row, col): #TODO: keep selection in same place in space
+        self.selection = (min(self.pressRow, row) + self.renderY, max(self.pressRow, row)+1 + self.renderY,
+                          min(self.pressCol, col) + self.renderX, max(self.pressCol, col)+1 + self.renderX)
+
+    def copySelection(self):
+        sel = set()
+        #TODO: 
+        self.zoo.species['Clipboard'] = sel
         
     def wheelEvent(self, e):
         if e.angleDelta().y() > 0:
@@ -229,10 +234,10 @@ class GameOfLife(Qt.QWidget):
 
         #Cell offset: moves cells relative to grid (midpoint offset for smoother panning)
         if self.cellOffsetX > self.sq or self.cellOffsetX < 0:
-            self.renderX += self.cellOffsetX // self.sq
+            self.renderX += int(self.cellOffsetX // self.sq)
             self.cellOffsetX %= self.sq
         if self.cellOffsetY > self.sq or self.cellOffsetY < 0:
-            self.renderY += self.cellOffsetY // self.sq
+            self.renderY += int(self.cellOffsetY // self.sq)
             self.cellOffsetY %= self.sq
 
         self.defineRenderRegion()
@@ -267,9 +272,12 @@ class GameOfLife(Qt.QWidget):
                     qp.fillRect(self.renderRects[point[0]][point[1]], selColor)
         elif self.mouseMode == Mode.select:
             if not self.leftPressed:
-                for i in range(self.selection[0], self.selection[1]):
-                    for j in range(self.selection[2], self.selection[3]):
-                        qp.fillRect(self.renderRects[i][j], self.selectionColor)
+                y0, y1 = self.selection[0] - self.renderY, self.selection[1] - self.renderY
+                x0, x1 = self.selection[2] - self.renderX, self.selection[3] - self.renderX
+                for i in range(y0, y1):
+                    for j in range(x0, x1):
+                        if 0 <= i < self.renderHeight and 0 <= j < self.renderWidth:
+                            qp.fillRect(self.renderRects[i][j], self.selectionColor)
             else:
                 for i in range(min(self.pressRow, self.mousePosition[0]),
                                max(self.pressRow, self.mousePosition[0]) + 1):
@@ -339,3 +347,6 @@ class GameOfLife(Qt.QWidget):
 
     def addCellType(self):#TODO: add ARGS
         self.cellSet.add_new_type()
+
+    def delCellType(self, sel):
+        self.cellSet.del_type(sel)
