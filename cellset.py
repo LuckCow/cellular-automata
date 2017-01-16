@@ -112,8 +112,8 @@ class CellSet:
                     self.cells.remove(c)
                     break
 
-    def add_cell(self, point, type_id, override=False):
-        newPoint = Cell(y=point[0], x=point[1], cid=type_id)
+    def add_cell(self, point, cid, override=False):
+        newPoint = Cell(y=point[0], x=point[1], cid=cid)
         if override:
             self.cells.discard(newPoint)
         self.cells.add(newPoint)

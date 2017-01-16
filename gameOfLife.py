@@ -45,7 +45,7 @@ User expected right click to either pan or give a menu. (NOT DO NEXT GENERATION)
 -->added right click mouse panning
 """
 
-from PyQt4 import Qt
+from PyQt5 import Qt
 import sys
 from lifeforms import Lifeforms
 from enum import IntEnum
@@ -149,9 +149,9 @@ class GameOfLife(Qt.QWidget):
         if e.button() == 1:
             if self.mouseMode == Mode.edit:
                 if self.editMode == Edit.toggle:
-                    self.mouseDraw(row, col, True)
-                elif self.editMode == Edit.fill:
                     self.mouseDraw(row, col, False)
+                elif self.editMode == Edit.fill:
+                    self.mouseDraw(row, col, True)
                 elif self.editMode == Edit.erase:
                     self.mouseErase(row, col)
             elif self.mouseMode == Mode.place:
@@ -188,16 +188,18 @@ class GameOfLife(Qt.QWidget):
                 p = (i+self.renderY,j+self.renderX)
                 self.cellSet.remove_cell(p, None) #Change to only delete selected type
 
-    def mousePlace(self, row, col): #TODO: UPDATE THIS
+    def mousePlace(self, row, col):
         form = self.zoo.getLifeformSet(row, col, self.renderY, self.renderX, self.selId)
-        self.cellSet.cells.update(form)
+        for cell in form:
+            self.cellSet.cells.discard(cell)
+            self.cellSet.cells.add(cell)
 
     def mouseSelect(self, row, col):
         self.selection = (min(self.pressRow, row), max(self.pressRow, row)+1,
                           min(self.pressCol, col), max(self.pressCol, col)+1)
         
     def wheelEvent(self, e):
-        if e.delta() > 0:
+        if e.angleDelta().y() > 0:
             self.zoom(True)
         else:
             self.zoom(False)
@@ -257,11 +259,12 @@ class GameOfLife(Qt.QWidget):
 
     def drawMode(self, qp):
         if self.mouseMode == Mode.place:
+            selColor = Qt.QColor(self.cellSet.types[self.selId]['color'])
+            selColor.setAlpha(155)
             form = self.zoo.getLifeformSet(self.mousePosition[0], self.mousePosition[1], 0, 0)
             for point in form:
                 if 0 <= point[1] < self.renderWidth and 0 <= point[0] < self.renderHeight:
-                    qp.fillRect(self.renderRects[point[0]][point[1]],
-                                Qt.QColor(self.cellSet.types[self.selId]['color']).lighter())
+                    qp.fillRect(self.renderRects[point[0]][point[1]], selColor)
         elif self.mouseMode == Mode.select:
             if not self.leftPressed:
                 for i in range(self.selection[0], self.selection[1]):

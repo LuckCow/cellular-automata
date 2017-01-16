@@ -1,4 +1,4 @@
-from PyQt4 import Qt, uic
+from PyQt5 import Qt, uic
 import sys
 from lifeforms import Lifeforms
 from gameOfLife import GameOfLife
@@ -33,15 +33,19 @@ class mainWindow(Qt.QMainWindow):
         self.lf_vertical.pressed.connect(self.gol.zoo.flipVertical)
         self.lf_selection.addItem('Clipboard')
         self.lf_selection.addItems(sorted(list(self.gol.zoo.species.keys())))
-        Qt.QObject.connect(self.lf_selection, Qt.SIGNAL("activated(QString)"),
-                               self.gol.zoo.setSpecies)
+        #Qt.QObject.connect(self.lf_selection, Qt.SIGNAL("activated(QString)"), self.gol.zoo.setSpecies)
 
         self.ct_selection.addItems(['Conway'])
         self.setCellType(0)
         self.name_text.returnPressed.connect(self.editCellName)
         self.new_cell.pressed.connect(self.addCellType)
-        
+
+        for i in range(1, 9):
+            but_str = 'sp{}'.format(i)
+            #exec('self.' + but_str + '.toggled.connect(self.gol.cellSet.types[self.gol.selId]["spawn"].append(i))')
+         
         self.horizontalLayout.insertWidget(0, self.gol)
+
 
         #self.gol.setFocusPolicy(Qt.Qt.StrongFocus)
         #self.setCentralWidget(self.gol)
@@ -60,10 +64,9 @@ class mainWindow(Qt.QMainWindow):
         self.ct_selection.setCurrentIndex(sel)
         
     def setCellType(self, sel):
-        pass
-        '''
         self.gol.setCellType(sel)
-        props = self.gol.cellSet.types[sel].getProperties()
+        props = self.gol.cellSet.types[sel]
+        '''
         self.survive_min.setValue(props.surviveRange[0])
         self.survive_min.setRange(0, props.surviveRange[1])
         self.survive_max.setValue(props.surviveRange[1])
@@ -72,11 +75,11 @@ class mainWindow(Qt.QMainWindow):
         self.spawn_min.setRange(1, props.spawnRange[1])
         self.spawn_max.setValue(props.spawnRange[1])
         self.spawn_max.setRange(props.spawnRange[0], 8)
-        self.name_text.setText(props.name)
+        '''
+        self.name_text.setText(props['name'])
 
         #TODO: enable editing with spin boxes
         #TODO: add color display and editing
-        '''
 
     def editCellName(self):
         newName = self.name_text.text()
