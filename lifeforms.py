@@ -1,3 +1,5 @@
+import cellset
+
 class Lifeforms():
     """
     Common lifeforms to place
@@ -53,12 +55,12 @@ class Lifeforms():
         self.setPoints = newSet.copy()
             
         
-    def getLifeformSet(self, row, col, rowOffset, colOffset):
+    def getLifeformSet(self, row, col, rowOffset, colOffset, cid=None):
         translatedSet = set()
         for coordPair in self.setPoints:
             x = coordPair[1] + col + colOffset
             y = coordPair[0] + row + rowOffset
-            translatedSet.add((y,x))
+            translatedSet.add(cellset.Cell(y,x,cid))
         return translatedSet
 
     def setSpecies(self, sel):

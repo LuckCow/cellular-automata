@@ -189,8 +189,8 @@ class GameOfLife(Qt.QWidget):
                 self.cellSet.remove_cell(p, None) #Change to only delete selected type
 
     def mousePlace(self, row, col): #TODO: UPDATE THIS
-        form = self.zoo.getLifeformSet(row, col, self.renderY, self.renderX)
-        self.cellSets[self.cellSetsSelection].coords.update(form)
+        form = self.zoo.getLifeformSet(row, col, self.renderY, self.renderX, self.selId)
+        self.cellSet.cells.update(form)
 
     def mouseSelect(self, row, col):
         self.selection = (min(self.pressRow, row), max(self.pressRow, row)+1,

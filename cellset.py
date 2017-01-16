@@ -22,6 +22,13 @@ class Cell():
     def __repr__(self):
         return 'Point object:({}, {}), id:{})'.format(self.y, self.x, self.cid)
 
+    def __getitem__(self, i):
+        if i == 0:
+            return self.y
+        if i == 1:
+            return self.x
+        if i == 2:
+            return self.cid
 
 class CellSet:
     def __init__(self):
