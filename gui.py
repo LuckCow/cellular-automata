@@ -40,6 +40,7 @@ class mainWindow(Qt.QMainWindow):
         self.setCellType(0)
         self.name_text.returnPressed.connect(self.editCellName)
         self.new_cell.pressed.connect(self.addCellType)
+        self.del_cell.pressed.connect(self.delCellType)
 
         for i in range(1, 9):
             exec('self.sp{}.clicked.connect(self.editCellProperties)'.format(i, i))
@@ -60,10 +61,16 @@ class mainWindow(Qt.QMainWindow):
     def addCellType(self):
         sel = len(self.gol.cellSet.types)
         self.gol.addCellType()
-        self.gol.setCellType(sel)
         self.setCellType(sel)
         self.ct_selection.insertItem(sel, self.gol.cellSet.types[sel]['name'])
         self.ct_selection.setCurrentIndex(sel)
+
+    def delCellType(self):
+        sel = self.ct_selection.currentIndex()
+        self.gol.delCellType(sel)
+        self.setCellType(0)
+        self.ct_selection.removeItem(sel)
+        self.ct_selection.setCurrentIndex(0)
         
     def setCellType(self, sel):
         self.gol.setCellType(sel)
@@ -71,16 +78,6 @@ class mainWindow(Qt.QMainWindow):
         for i in range(1, 9):
             exec('self.sp{}.setChecked(i in self.gol.cellSet.types[sel]["spawn"])'.format(i))
             exec('self.sp{}_2.setChecked(i in self.gol.cellSet.types[sel]["survive"])'.format(i))
-        '''
-        self.survive_min.setValue(props.surviveRange[0])
-        self.survive_min.setRange(0, props.surviveRange[1])
-        self.survive_max.setValue(props.surviveRange[1])
-        self.survive_max.setRange(props.surviveRange[0], 8)
-        self.spawn_min.setValue(props.spawnRange[0])
-        self.spawn_min.setRange(1, props.spawnRange[1])
-        self.spawn_max.setValue(props.spawnRange[1])
-        self.spawn_max.setRange(props.spawnRange[0], 8)
-        '''
         self.name_text.setText(props['name'])
 
         #TODO: enable editing with spin boxes
