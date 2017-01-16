@@ -56,7 +56,7 @@ class mainWindow(Qt.QMainWindow):
         self.gol.addCellType()
         self.gol.setCellType(sel)
         self.setCellType(sel)
-        self.ct_selection.insertItem(sel, self.gol.cellSets[sel].name)
+        self.ct_selection.insertItem(sel, self.gol.cellSet.types[sel]['name'])
         self.ct_selection.setCurrentIndex(sel)
         
     def setCellType(self, sel):

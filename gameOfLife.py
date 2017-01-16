@@ -112,9 +112,6 @@ class GameOfLife(Qt.QWidget):
         self.cellSet.add_new_type()
         self.selId = 0
 
-        self.overpopulation = False
-        #Significant slow down was observed between 1700 and 2800 population count
-
         self.setMouseTracking(True)
 
         self.rightPressed = False
@@ -252,9 +249,11 @@ class GameOfLife(Qt.QWidget):
         for i in range(0, self.renderWidth):
             for j in range(0, self.renderHeight):
                 qp.drawRect(self.renderRects[j][i])
-                if (j+self.renderY, i+self.renderX) in self.cellSet.cells:
-                    #might be more efficient to iterate over set instead of having this if statement^
-                    qp.fillRect(self.renderRects[j][i], self.c)#Qt.QColor(self.cellSet.types[cell.cid]['color']))
+        for c in self.cellSet.cells:
+            relY, relX = int(c.y - self.renderY), int(c.x - self.renderX)
+            if 0 <= relY < self.renderHeight and 0 <= relX < self.renderWidth:
+                qp.fillRect(self.renderRects[relY][relX],
+                            Qt.QColor(self.cellSet.types[c.cid]['color']))
 
     def drawMode(self, qp):
         if self.mouseMode == Mode.place:
