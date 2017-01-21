@@ -38,6 +38,7 @@ class mainWindow(Qt.QMainWindow):
         self.sel_copy.pressed.connect(self.gol.copySelection)
 
         self.ct_selection.addItems(['Conway'])
+        self.types = [0]
         self.setCellType(0)
         self.name_text.returnPressed.connect(self.editCellName)
         self.new_cell.pressed.connect(self.addCellType)
@@ -55,20 +56,24 @@ class mainWindow(Qt.QMainWindow):
         self.show()
 
     def addCellType(self):
-        sel = len(self.gol.cellSet.types)
+        new_id = self.gol.cellSet.id_count
         self.gol.addCellType()
-        self.setCellType(sel)
-        self.ct_selection.insertItem(sel, self.gol.cellSet.types[sel]['name'])
-        self.ct_selection.setCurrentIndex(sel)
+        self.types.append(new_id)
+        self.setCellType(-1)
+        self.ct_selection.insertItem(self.types[-1], self.gol.cellSet.types[new_id]['name'])
+        self.ct_selection.setCurrentIndex(len(self.types)-1)
 
     def delCellType(self): #TODO: figure out indexing when a type is deleted
-        sel = self.ct_selection.currentIndex()
-        self.gol.delCellType(sel)
-        self.setCellType(0)
-        self.ct_selection.removeItem(sel)
-        self.ct_selection.setCurrentIndex(0)
+        if len(self.types) > 1:
+            sel = self.types[self.ct_selection.currentIndex()]
+            self.gol.delCellType(sel)
+            self.types.remove(sel)
+            self.setCellType(0)
+            self.ct_selection.removeItem(self.ct_selection.currentIndex())
+            self.ct_selection.setCurrentIndex(0)
         
-    def setCellType(self, sel):
+    def setCellType(self, index):
+        sel = self.types[index]
         self.gol.setCellType(sel)
         props = self.gol.cellSet.types[sel]
         for i in range(1, 9):
