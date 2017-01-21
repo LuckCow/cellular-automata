@@ -12,7 +12,6 @@ class mainWindow(Qt.QMainWindow):
         #TODO: implement intuitive editing methods
         #TODO: implement toolbar functions
         #TODO: reimpliment name editing
-        #TODO: fix delete
         #TODO: implement color display with cell type (possibly editing too)
         #TODO: implement threading so that ui functionality does not slow down with timer generations
         super(mainWindow, self).__init__()
@@ -63,7 +62,7 @@ class mainWindow(Qt.QMainWindow):
         self.ct_selection.insertItem(self.types[-1], self.gol.cellSet.types[new_id]['name'])
         self.ct_selection.setCurrentIndex(len(self.types)-1)
 
-    def delCellType(self): #TODO: figure out indexing when a type is deleted
+    def delCellType(self):
         if len(self.types) > 1:
             sel = self.types[self.ct_selection.currentIndex()]
             self.gol.delCellType(sel)

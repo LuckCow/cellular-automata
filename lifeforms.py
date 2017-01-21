@@ -62,7 +62,7 @@ class Lifeforms():
         newSet = set()
         for p in self.setPoints:
             if type(p) is cellset.Cell:
-                newP = cellset.Cell(p[0], p[1]*-1, p.cid)
+                newP = cellset.Cell(p[0]*-1, p[1], p.cid)
             else:
                 newP = newSet.add((p[0]*-1, p[1]))
             newSet.add(newP)

@@ -34,8 +34,9 @@ class CellSet:
     def __init__(self):
         self.cells = set()
         self.types = {}
-        self.namePool = ['Charlotte', 'Raleigh', 'Greenboro', 'Durham', 'Cary', 'Concord',
-                         'Gastonia', 'Cornelius', 'Carrboro', 'Boone']
+        self.namePool = ['Mecklen', 'Raleigh', 'Clemmons', 'Durham', 'Cary', 'Concord', 'Forsyth',
+                         'Gastonia', 'Cornelius', 'Garner', 'Boone', 'Apex', 'Wilming', 'Alamance',
+                         'Cabarrus', 'Kanna', 'Bern', 'Watuaga', 'Aulan', 'Conetoe', 'Cooleemee']
         self.id_count = 0
         self.gen_count = 0
 
@@ -81,6 +82,7 @@ class CellSet:
 
         self.types[self.id_count] = {'name': name, 'color': color, 'survive': survive, 'spawn': spawn}
         self.id_count += 1
+        return name
 
     def del_type(self, cid):
         del self.types[cid]

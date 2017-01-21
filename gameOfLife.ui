@@ -988,7 +988,7 @@
  <connections>
   <connection>
    <sender>ct_selection</sender>
-   <signal>activated(int)</signal>
+   <signal>currentIndexChanged(QString)</signal>
    <receiver>MainWindow</receiver>
    <slot>setCellType()</slot>
    <hints>
