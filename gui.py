@@ -8,11 +8,13 @@ class mainWindow(Qt.QMainWindow):
     Main window contains the main GoL widget and toolbar options
     """
     def __init__(self):
-        #TODO: Implement copy and paste
         #TODO: implement saving
-        #TODO: implement erase all
+        #TODO: implement intuitive editing methods
         #TODO: implement toolbar functions
-        #TODO: change timer scale to better control time frames of interest
+        #TODO: reimpliment name editing
+        #TODO: fix delete
+        #TODO: implement color display with cell type (possibly editing too)
+        #TODO: implement threading so that ui functionality does not slow down with timer generations
         super(mainWindow, self).__init__()
         uic.loadUi('gameOfLife.ui', self)
         self.gol = GameOfLife()
@@ -48,14 +50,9 @@ class mainWindow(Qt.QMainWindow):
 
         self.horizontalLayout.insertWidget(0, self.gol)
 
-
         #self.gol.setFocusPolicy(Qt.Qt.StrongFocus)
         #self.setCentralWidget(self.gol)
-        self.initUI()
         self.show()
-
-    def initUI(self):
-        pass
 
     def addCellType(self):
         sel = len(self.gol.cellSet.types)
@@ -79,8 +76,6 @@ class mainWindow(Qt.QMainWindow):
             exec('self.sp{}_2.setChecked(i in self.gol.cellSet.types[sel]["survive"])'.format(i))
         self.name_text.setText(props['name'])
 
-        #TODO: enable editing with spin boxes
-        #TODO: add color display and editing
 
     def editCellName(self):
         newName = self.name_text.text()
@@ -99,7 +94,6 @@ class mainWindow(Qt.QMainWindow):
         for i in range(1, 9):
             exec('if self.sp{}_2.isChecked(): sr.append({})'.format(i, i))
         self.gol.cellSet.types[sel]['survive'] = sr
-        print(sr)
 
 
     def setEditMode1(self):

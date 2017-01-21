@@ -3,12 +3,7 @@ Conway's game of life
 Author: Nick Collins
 Date: 3/16/2016
 
-
-Python version 3.4.3
-PyQt version 4.8.7 - Documentation: http://pyqt.sourceforge.net/Docs/PyQt4/classes.html
-
 Rules
-
     Any live cell with fewer than two live neighbours dies, as if caused by under-population.
     Any live cell with two or three live neighbours lives on to the next generation.
     Any live cell with more than three live neighbours dies, as if by over-population.
@@ -28,21 +23,6 @@ Board
 Generation Number
 Speed of animation
 
-TODO:
-Show generation number
-Mutations
-
-Known Bugs:
-
-
-User Feedback:
-A bit difficult to pick up on the controls without explanation
---> add labels for buttons and perhaps a help menu with some explanation about the game
-Could be a bit clearer about when the mouse is in erase or draw mode
-
-Addressed user feedback
-User expected right click to either pan or give a menu. (NOT DO NEXT GENERATION)
--->added right click mouse panning
 """
 
 from PyQt5 import Qt
@@ -54,7 +34,6 @@ import random
 from cellset import CellSet, Cell
 
 class Mode(IntEnum):
-    #Used for arrow key panning
     edit = 0
     select = 1
     place = 2
@@ -99,8 +78,6 @@ class GameOfLife(Qt.QWidget):
         self.cellOffsetX = self.sq/2
         self.cellOffsetY = self.sq/2
         
-        self.c = Qt.Qt.darkCyan
-        self.c2 = Qt.Qt.cyan
         self.selectionColor = Qt.QColor(223, 145, 0, 100)
         self.selectingColor = Qt.QColor(223, 145, 0, 64)
 
@@ -230,10 +207,8 @@ class GameOfLife(Qt.QWidget):
 
         #Grid offset: moves grid relative to screen
         if self.gridOffsetX > self.sq or self.gridOffsetX < 0:
-            #self.renderX += self.gridOffsetX // self.sq
             self.gridOffsetX %= self.sq
         if self.gridOffsetY > self.sq or self.gridOffsetY < 0:
-            #self.renderY += self.gridOffsetY // self.sq
             self.gridOffsetY %= self.sq
 
         #Cell offset: moves cells relative to grid (midpoint offset for smoother panning)
@@ -256,7 +231,7 @@ class GameOfLife(Qt.QWidget):
 
     def drawBoard(self, qp):
         ##Draw all rectangles (grid)
-        #fill living ones with black
+        #fill living ones with corresponding color
         for i in range(0, self.renderWidth):
             for j in range(0, self.renderHeight):
                 qp.drawRect(self.renderRects[j][i])
@@ -267,6 +242,7 @@ class GameOfLife(Qt.QWidget):
                             Qt.QColor(self.cellSet.types[c.cid]['color']))
 
     def drawMode(self, qp):
+        #Draw placement or selection indicators according to mouse mode
         if self.mouseMode == Mode.place:
             selColor = Qt.QColor()
             form = self.zoo.getLifeformSet(self.mousePosition[0], self.mousePosition[1], 0, 0, self.selId)
