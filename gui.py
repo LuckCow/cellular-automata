@@ -36,9 +36,10 @@ class mainWindow(Qt.QMainWindow):
         self.lf_selection.activated[str].connect(self.gol.zoo.setSpecies)
         self.sel_copy.pressed.connect(self.gol.copySelection)
 
-        self.ct_selection.addItems(['Conway'])
+        
         self.types = [0]
         self.setCellType(0)
+        self.ct_selection.addItems(['Conway'])
         self.name_text.returnPressed.connect(self.editCellName)
         self.new_cell.pressed.connect(self.addCellType)
         self.del_cell.pressed.connect(self.delCellType)
@@ -84,7 +85,7 @@ class mainWindow(Qt.QMainWindow):
     def editCellName(self):
         newName = self.name_text.text()
         sel = self.ct_selection.currentIndex()
-        self.gol.cellSets[sel].name = newName
+        self.gol.cellSet.types[sel]['name'] = newName
         self.ct_selection.setItemText(self.ct_selection.currentIndex(), newName)
 
     def editCellProperties(self):
