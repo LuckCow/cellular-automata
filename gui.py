@@ -38,7 +38,7 @@ class mainWindow(Qt.QMainWindow):
         self.sel_copy.pressed.connect(self.gol.copySelection)
 
         self.ct_selection.addItems(['Conway'])
-        self.setCellType(0)
+        self.setCellType('Conway')
         self.name_text.returnPressed.connect(self.editCellName)
         self.new_cell.pressed.connect(self.addCellType)
         self.del_cell.pressed.connect(self.delCellType)
@@ -55,25 +55,26 @@ class mainWindow(Qt.QMainWindow):
         self.show()
 
     def addCellType(self):
-        sel = len(self.gol.cellSet.types)
-        self.gol.addCellType()
+        sel = self.gol.addCellType()
         self.setCellType(sel)
         self.ct_selection.insertItem(sel, self.gol.cellSet.types[sel]['name'])
         self.ct_selection.setCurrentIndex(sel)
 
     def delCellType(self): #TODO: figure out indexing when a type is deleted
-        sel = self.ct_selection.currentIndex()
-        self.gol.delCellType(sel)
+        self.gol.delCellType(self.sel)
         self.setCellType(0)
-        self.ct_selection.removeItem(sel)
+        self.ct_selection.removeItem(self.sel)
         self.ct_selection.setCurrentIndex(0)
         
     def setCellType(self, sel):
-        self.gol.setCellType(sel)
-        props = self.gol.cellSet.types[sel]
+        for key, t in self.gol.cellSet.types.items():
+            if t['name'] == sel:
+                self.sel = key
+        self.gol.setCellType(self.sel)
+        props = self.gol.cellSet.types[self.sel]
         for i in range(1, 9):
-            exec('self.sp{}.setChecked(i in self.gol.cellSet.types[sel]["spawn"])'.format(i))
-            exec('self.sp{}_2.setChecked(i in self.gol.cellSet.types[sel]["survive"])'.format(i))
+            exec('self.sp{}.setChecked(i in self.gol.cellSet.types[self.sel]["spawn"])'.format(i))
+            exec('self.sp{}_2.setChecked(i in self.gol.cellSet.types[self.sel]["survive"])'.format(i))
         self.name_text.setText(props['name'])
 
 

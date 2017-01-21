@@ -86,7 +86,7 @@ class GameOfLife(Qt.QWidget):
         self.defineRenderRegion()
 
         self.cellSet = CellSet()
-        self.cellSet.add_new_type()
+        self.addCellType('Conway', 20000, [3, 2], [3])
         self.selId = 0
 
         self.setMouseTracking(True)
@@ -326,8 +326,8 @@ class GameOfLife(Qt.QWidget):
     def setCellType(self, sel):
         self.selId = sel
 
-    def addCellType(self):#TODO: add ARGS
-        self.cellSet.add_new_type()
+    def addCellType(self, name=None, color=None, survive=None, spawn=None):
+        return self.cellSet.add_new_type(name, color, survive, spawn)
 
     def delCellType(self, sel):
         self.cellSet.del_type(sel)
