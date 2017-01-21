@@ -106,6 +106,9 @@
            </property>
           </widget>
           <widget class="QPushButton" name="pushButton_5">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="geometry">
             <rect>
              <x>130</x>
@@ -661,7 +664,7 @@
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Mouse Mode&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="edit_tab">
            <attribute name="title">
@@ -683,7 +686,7 @@
            <widget class="QPushButton" name="edit_toggle">
             <property name="geometry">
              <rect>
-              <x>20</x>
+              <x>10</x>
               <y>50</y>
               <width>85</width>
               <height>27</height>
@@ -705,17 +708,17 @@
              <bool>false</bool>
             </property>
            </widget>
-           <widget class="QPushButton" name="edit_fill">
+           <widget class="QPushButton" name="edit_fill_in">
             <property name="geometry">
              <rect>
-              <x>20</x>
+              <x>10</x>
               <y>90</y>
               <width>85</width>
               <height>27</height>
              </rect>
             </property>
             <property name="text">
-             <string>Fill</string>
+             <string>Fill In</string>
             </property>
             <property name="checkable">
              <bool>true</bool>
@@ -724,17 +727,55 @@
              <bool>true</bool>
             </property>
            </widget>
-           <widget class="QPushButton" name="edit_erase">
+           <widget class="QPushButton" name="edit_erase_sel">
             <property name="geometry">
              <rect>
-              <x>20</x>
+              <x>10</x>
               <y>130</y>
               <width>85</width>
               <height>27</height>
              </rect>
             </property>
             <property name="text">
-             <string>Erase</string>
+             <string>Erase Selected</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="autoExclusive">
+             <bool>true</bool>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="edit_fill_over">
+            <property name="geometry">
+             <rect>
+              <x>100</x>
+              <y>90</y>
+              <width>85</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Fill Over</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="autoExclusive">
+             <bool>true</bool>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="edit_erase_all">
+            <property name="geometry">
+             <rect>
+              <x>100</x>
+              <y>130</y>
+              <width>85</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Erase All</string>
             </property>
             <property name="checkable">
              <bool>true</bool>
@@ -761,32 +802,6 @@
              <string>Copy</string>
             </property>
            </widget>
-           <widget class="QPushButton" name="sel_paste">
-            <property name="geometry">
-             <rect>
-              <x>20</x>
-              <y>90</y>
-              <width>85</width>
-              <height>27</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Paste</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="sel_save">
-            <property name="geometry">
-             <rect>
-              <x>20</x>
-              <y>130</y>
-              <width>85</width>
-              <height>27</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>Save..</string>
-            </property>
-           </widget>
            <widget class="QLabel" name="label_7">
             <property name="geometry">
              <rect>
@@ -798,6 +813,22 @@
             </property>
             <property name="text">
              <string>Mouse Mode: Select</string>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="sel_copy_2">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="geometry">
+             <rect>
+              <x>20</x>
+              <y>90</y>
+              <width>85</width>
+              <height>27</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Cut</string>
             </property>
            </widget>
           </widget>

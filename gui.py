@@ -1,7 +1,7 @@
 from PyQt5 import Qt, uic
 import sys
 from lifeforms import Lifeforms
-from gameOfLife import GameOfLife
+from gameOfLife import GameOfLife, Edit
 
 class mainWindow(Qt.QMainWindow):
     """
@@ -21,11 +21,13 @@ class mainWindow(Qt.QMainWindow):
         self.timer_button.clicked.connect(self.gol.toggleTimer)
         self.timer_slider.valueChanged.connect(self.gol.changeTimerSpeed)
         self.mouse_mode_tab.currentChanged.connect(self.gol.setMouseMode)
-        self.edit_toggle.pressed.connect(self.setEditMode1)
-        self.edit_fill.clicked.connect(self.setEditMode2)
-        self.edit_erase.clicked.connect(self.setEditMode3)
 
-        
+        self.editModes = {'edit_toggle':Edit.toggle, 'edit_fill_in': Edit.fillIn,
+                          'edit_fill_over': Edit.fillOver, 'edit_erase_all': Edit.eraseAll,
+                          'edit_erase_sel': Edit.eraseSelected}
+        for key, val in self.editModes.items():
+            exec('self.{}.released.connect(self.setEditMode)'.format(key))
+
         self.gol.setMouseMode(self.mouse_mode_tab.currentIndex())
 
         self.lf_cw.pressed.connect(self.gol.zoo.rotateRight)
@@ -34,9 +36,8 @@ class mainWindow(Qt.QMainWindow):
         self.lf_vertical.pressed.connect(self.gol.zoo.flipVertical)
         self.lf_selection.addItems(sorted(list(self.gol.zoo.species.keys())))
         self.lf_selection.activated[str].connect(self.gol.zoo.setSpecies)
-        self.sel_copy.pressed.connect(self.gol.copySelection)
+        self.sel_copy.pressed.connect(self.copy)
 
-        
         self.types = [0]
         self.setCellType(0)
         self.ct_selection.addItems(['Conway'])
@@ -100,14 +101,15 @@ class mainWindow(Qt.QMainWindow):
             exec('if self.sp{}_2.isChecked(): sr.append({})'.format(i, i))
         self.gol.cellSet.types[sel]['survive'] = sr
 
+    def setEditMode(self):
+        for i in self.editModes.keys():
+            exec('if self.{}.isChecked(): self.gol.editMode = self.editModes["{}"]'.format(i, i))
+        print(self.gol.editMode)
 
-    def setEditMode1(self):
-        self.gol.editMode = 0
-    def setEditMode2(self):
-        self.gol.editMode = 1
-    def setEditMode3(self):
-        self.gol.editMode = 2
-    
+    def copy(self):
+        self.gol.copySelection()
+        self.mouse_mode_tab.setCurrentIndex(2)
+        self.lf_selection.setCurrentIndex(1) #TODO: fix this instance of hardcoding :P
         
 def main():
     app = Qt.QApplication(sys.argv)

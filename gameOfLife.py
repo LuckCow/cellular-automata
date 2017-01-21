@@ -40,8 +40,10 @@ class Mode(IntEnum):
 
 class Edit(IntEnum):
     toggle = 0
-    fill = 1
-    erase = 2
+    fillIn = 1
+    fillOver = 2
+    eraseAll = 3
+    eraseSelected = 4
         
         
 class GameOfLife(Qt.QWidget):
@@ -126,11 +128,15 @@ class GameOfLife(Qt.QWidget):
         if e.button() == 1:
             if self.mouseMode == Mode.edit:
                 if self.editMode == Edit.toggle:
-                    self.mouseDraw(row, col, False)
-                elif self.editMode == Edit.fill:
-                    self.mouseDraw(row, col, True)
-                elif self.editMode == Edit.erase:
+                    self.mouseToggle(row, col)
+                if self.editMode == Edit.fillIn:
+                    self.mouseFill(row, col, False)
+                elif self.editMode == Edit.fillOver:
+                    self.mouseFill(row, col, True)
+                elif self.editMode == Edit.eraseAll:
                     self.mouseErase(row, col)
+                elif self.editMode == Edit.eraseSelected:
+                    self.mouseErase(row, col, self.selId)
             elif self.mouseMode == Mode.place:
                 self.mousePlace(row, col)
             elif self.mouseMode == Mode.select:
@@ -152,18 +158,24 @@ class GameOfLife(Qt.QWidget):
             self.panSquares(dx, dy)
             self.lastMouseX = e.x()
             self.lastMouseY = e.y()
+
+    def mouseToggle(self, row, col):
+        for i in range(min(self.pressRow, row), max(self.pressRow, row)+1):
+            for j in range(min(self.pressCol, col), max(self.pressCol, col)+1):
+                p = (i+self.renderY,j+self.renderX)
+                self.cellSet.toggle_cell(p, self.selId)
             
-    def mouseDraw(self, row, col, override):
+    def mouseFill(self, row, col, override):
         for i in range(min(self.pressRow, row), max(self.pressRow, row)+1):
             for j in range(min(self.pressCol, col), max(self.pressCol, col)+1):
                 p = (i+self.renderY,j+self.renderX)
                 self.cellSet.add_cell(p, self.selId, override)
                         
-    def mouseErase(self, row, col):
+    def mouseErase(self, row, col, cid=None):
         for i in range(min(self.pressRow, row), max(self.pressRow, row)+1):
             for j in range(min(self.pressCol, col), max(self.pressCol, col)+1):
                 p = (i+self.renderY,j+self.renderX)
-                self.cellSet.remove_cell(p, None) #Change to only delete selected type
+                self.cellSet.remove_cell(p, cid) #Change to only delete selected type
 
     def mousePlace(self, row, col):
         form = self.zoo.getLifeformSet(row, col, self.renderY, self.renderX, self.selId)

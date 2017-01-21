@@ -120,6 +120,13 @@ class CellSet:
             self.cells.discard(newPoint)
         self.cells.add(newPoint)
 
+    def toggle_cell(self, point, cid):
+        newPoint = Cell(y=point[0], x=point[1], cid=cid)
+        if newPoint in self.cells:
+            self.cells.discard(newPoint)
+        else:
+            self.cells.add(newPoint)
+
     def reset(self):
         print('TODO: reset')
     
