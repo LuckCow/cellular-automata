@@ -14,7 +14,7 @@ https://en.wikipedia.org/wiki/Conway's_Game_of_Life
 https://en.wikipedia.org/wiki/Cellular_automaton
 """
 
-from random import paretovariate, randint, choice
+import random
 from collections import namedtuple, defaultdict, Counter
 
 TypeProperties = namedtuple('TypeProperties', ['color', 'survive', 'spawn'])
@@ -84,18 +84,36 @@ class CellSet:
 
     def add_new_type(self, name=None, color=None, survive=None, spawn=None):
         if not color:
-            color = randint(0, 2**24)
+            color = random.randint(0, 2**24)
 
         #TODO: Add random behavior to defaults
         if not spawn:
-            spawn = [3]
+            center = int(random.triangular(1, 8, 3))
+            extra = None
+            if random.random() > 0.7:
+                if center < 4:
+                    extra = center + 1
+                else:
+                    extra = center - 1
+            spawn = [center]
+            if extra:
+                spawn.append(extra)
 
         if not survive:
-            survive = [2, 3]
+            center = int(random.triangular(1, 8, 3))
+            extra = None
+            survive = [center]
+            while random.random() > 0.4:
+                extra = center + random.randint(-3, 3)
+                if extra > 0 and extra <= 8 and (extra not in survive):
+                    survive.append(extra)
 
         if not name:
-            name = choice(self.namePool)
-            self.namePool.remove(name)
+            if self.namePool:
+                name = random.choice(self.namePool)
+                self.namePool.remove(name)
+            else:
+                name = 'Unidentified Species #{}'.format(self.id_count)
 
         self.types[self.id_count] = {'name': name, 'color': color, 'survive': survive, 'spawn': spawn}
         self.id_count += 1
