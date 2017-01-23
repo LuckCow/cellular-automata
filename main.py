@@ -41,6 +41,11 @@ class mainWindow(Qt.QMainWindow):
         self.lf_selection.activated[str].connect(self.gol.zoo.setSpecies)
         self.sel_copy.pressed.connect(self.copy)
 
+        self.scene = Qt.QGraphicsScene()
+        self.brush = Qt.QBrush(Qt.QColor(self.gol.cellSet.types[self.gol.selId]['color']))
+        self.scene.addRect(0, 0, 30, 30, brush=self.brush)
+        self.color_canvas.setScene(self.scene)
+
         self.types = [0]
         self.setCellType(0)
         self.ct_selection.addItems(['Conway'])
@@ -55,6 +60,7 @@ class mainWindow(Qt.QMainWindow):
 
         self.horizontalLayout.insertWidget(0, self.gol)
 
+
         #self.gol.setFocusPolicy(Qt.Qt.StrongFocus)
         #self.setCentralWidget(self.gol)
         self.show()
@@ -66,6 +72,9 @@ class mainWindow(Qt.QMainWindow):
         self.setCellType(-1)
         self.ct_selection.insertItem(self.types[-1], self.gol.cellSet.types[new_id]['name'])
         self.ct_selection.setCurrentIndex(len(self.types)-1)
+        self.brush = Qt.QBrush(Qt.QColor(self.gol.cellSet.types[self.gol.selId]['color']))
+        self.scene.addRect(0, 0, 300, 300, brush=self.brush)
+
 
     def delCellType(self):
         if len(self.types) > 1:
@@ -87,6 +96,8 @@ class mainWindow(Qt.QMainWindow):
             exec('self.sp{}.setChecked(i in self.gol.cellSet.types[sel]["spawn"])'.format(i))
             exec('self.sp{}_2.setChecked(i in self.gol.cellSet.types[sel]["survive"])'.format(i))
         self.name_text.setText(props['name'])
+        self.brush = Qt.QBrush(Qt.QColor(self.gol.cellSet.types[self.gol.selId]['color']))
+        self.scene.addRect(0, 0, 300, 300, brush=self.brush)
 
 
     def editCellName(self):

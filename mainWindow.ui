@@ -36,7 +36,7 @@
           <widget class="QLabel" name="label_3">
            <property name="geometry">
             <rect>
-             <x>40</x>
+             <x>20</x>
              <y>10</y>
              <width>56</width>
              <height>17</height>
@@ -499,6 +499,26 @@
             </property>
            </widget>
           </widget>
+          <widget class="QGraphicsView" name="color_canvas">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>30</y>
+             <width>31</width>
+             <height>31</height>
+            </rect>
+           </property>
+          </widget>
+          <zorder>color_canvas</zorder>
+          <zorder>label_3</zorder>
+          <zorder>ct_selection</zorder>
+          <zorder>new_cell</zorder>
+          <zorder>label_12</zorder>
+          <zorder>name_text</zorder>
+          <zorder>del_cell</zorder>
+          <zorder>pushButton_5</zorder>
+          <zorder>groupBox</zorder>
+          <zorder>groupBox_3</zorder>
          </widget>
         </item>
         <item>

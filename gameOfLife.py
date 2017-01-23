@@ -236,7 +236,9 @@ class GameOfLife(Qt.QWidget):
 
     def drawMode(self, qp):
         #Draw placement or selection indicators according to mouse mode
-        if self.mouseMode == Mode.place:
+        if self.mouseMode == Mode.edit:
+            pass #TODO: add indicators for each edit function
+        elif self.mouseMode == Mode.place:
             selColor = Qt.QColor()
             form = self.zoo.getLifeformSet(self.mousePosition[0], self.mousePosition[1], 0, 0, self.selId)
             for point in form:

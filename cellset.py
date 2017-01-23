@@ -42,10 +42,12 @@ class Cell():
     def __getitem__(self, i):
         if i == 0:
             return self.y
-        if i == 1:
+        elif i == 1:
             return self.x
-        if i == 2:
+        elif i == 2:
             return self.cid
+        else:
+            raise KeyError
 
 class CellSet:
     def __init__(self):
