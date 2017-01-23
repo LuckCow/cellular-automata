@@ -1,3 +1,19 @@
+"""
+Board is implemented using a set of coordinate points with their corresponding cell id.
+A dictionary is also stored to map the id to behavior, color, and name. 
+
+Rules
+    There are different types of cells known as 'species'.
+The behavior of each cell is specified by a set of numbers for spawning and surviving.
+Each generation, a cell will remain if the number of neighbors is in its survive set.
+Similarly, a new cell will appear in a cell which has the number of neighbors in its spawn set.
+Other cell species count toward both requirements.
+
+Reference pages:
+https://en.wikipedia.org/wiki/Conway's_Game_of_Life
+https://en.wikipedia.org/wiki/Cellular_automaton
+"""
+
 from random import paretovariate, randint, choice
 from collections import namedtuple, defaultdict, Counter
 
@@ -9,6 +25,7 @@ class Cell():
         self.y, self.x, self.cid = y, x, cid
 
     def __hash__(self):
+        #Only the x and y coordinates are hashed so only one type of cell can occupy a location
         return hash((self.y, self.x))
 
     def __eq__(self, other):
@@ -126,10 +143,3 @@ class CellSet:
             self.cells.discard(newPoint)
         else:
             self.cells.add(newPoint)
-
-    def reset(self):
-        print('TODO: reset')
-    
-
-
-    #TODO: other non Qt related stuff here

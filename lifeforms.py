@@ -3,6 +3,9 @@ import cellset
 class Lifeforms():
     """
     Common lifeforms to place
+    Can be stored in set without specified cell id, which makes them placed as selected id
+    OR
+    The points are stored with their cell id specified, and placed with the corresponding id
     """
     def __init__(self, sel='glider'):
         self.funcList = {'Flip Horizontal': self.flipHorizontal, 'Flip Vertical': self.flipVertical,

@@ -1,28 +1,10 @@
 """
-Conway's game of life
+Cellular Automata Game
 Author: Nick Collins
 Date: 3/16/2016
 
-Rules
-    Any live cell with fewer than two live neighbours dies, as if caused by under-population.
-    Any live cell with two or three live neighbours lives on to the next generation.
-    Any live cell with more than three live neighbours dies, as if by over-population.
-    Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-(from https://en.wikipedia.org/wiki/Conway's_Game_of_Life)
-
-Features:
-GUI
-Infinite board with generation of both rendered and nonrendered life
-Pause/Varying speed of animation
-Can edit state in pause and while running
-Can place and rotate a small set of known lifeforms
-Pan with right mouse button
-
-Display:
-Board
-Generation Number
-Speed of animation
-
+This is the game of life board widget
+It contains the board drawing, panning, zooming, and editing functionality
 """
 
 from PyQt5 import Qt
@@ -30,7 +12,6 @@ import sys
 from lifeforms import Lifeforms
 from enum import IntEnum
 from collections import defaultdict
-import random
 from cellset import CellSet, Cell
 
 class Mode(IntEnum):
