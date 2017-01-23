@@ -1,8 +1,9 @@
+import cellset
+
 class Lifeforms():
     """
     Common lifeforms to place
     """
-    
     def __init__(self, sel='glider'):
         self.funcList = {'Flip Horizontal': self.flipHorizontal, 'Flip Vertical': self.flipVertical,
                          'Rotate Right': self.rotateRight, 'Rotate Left': self.rotateLeft}
@@ -18,7 +19,8 @@ class Lifeforms():
                         'Infinity Line': {(0,0),(0,1),(0,2),(0,3),(0,4),(0,5),(0,6),(0,7),(0,9),
                                                    (0,10),(0,11),(0,12),(0,13),(0,17),(0,18),(0,19),(0,26),
                                                    (0,27),(0,28),(0,29),(0,30),
-                                                   (0,31),(0,32),(0,34),(0,35),(0,36),(0,37),(0,38)}
+                                                   (0,31),(0,32),(0,34),(0,35),(0,36),(0,37),(0,38)},
+                        'Clipboard':set(),
                }
         self.selection = sel
         self.setPoints = self.species[self.selection]
@@ -27,7 +29,10 @@ class Lifeforms():
     def rotateLeft(self):
         newSet = set()
         for p in self.setPoints:
-            newP = (p[1], p[0])
+            if type(p) is cellset.Cell:
+                newP = cellset.Cell(p[1], p[0], p.cid)
+            else:
+                newP = (p[1], p[0])
             newSet.add(newP)
         self.setPoints = newSet.copy()
         self.flipVertical()
@@ -36,28 +41,44 @@ class Lifeforms():
         self.flipVertical()
         newSet = set()
         for p in self.setPoints:
-            newSet.add((p[1], p[0]))
+            if type(p) is cellset.Cell:
+                newP = cellset.Cell(p[1], p[0], p.cid)
+            else:
+                newP = (p[1], p[0])
+            newSet.add(newP)
         self.setPoints = newSet.copy()
 
     def flipHorizontal(self):
         newSet = set()
         for p in self.setPoints:
-            newSet.add((p[0], p[1]*-1))
+            if type(p) is cellset.Cell:
+                newP = cellset.Cell(p[0], p[1]*-1, p.cid)
+            else:
+                newP = (p[0], p[1]*-1)
+            newSet.add(newP)
         self.setPoints = newSet.copy()
 
     def flipVertical(self):
         newSet = set()
         for p in self.setPoints:
-            newSet.add((p[0]*-1, p[1]))
+            if type(p) is cellset.Cell:
+                newP = cellset.Cell(p[0]*-1, p[1], p.cid)
+            else:
+                newP = newSet.add((p[0]*-1, p[1]))
+            newSet.add(newP)
         self.setPoints = newSet.copy()
             
         
-    def getLifeformSet(self, row, col, rowOffset, colOffset):
+    def getLifeformSet(self, row, col, rowOffset, colOffset, cid):
         translatedSet = set()
         for coordPair in self.setPoints:
             x = coordPair[1] + col + colOffset
             y = coordPair[0] + row + rowOffset
-            translatedSet.add((y,x))
+            if type(coordPair) is cellset.Cell:
+                newCell = cellset.Cell(y,x,coordPair.cid)
+            else:
+                newCell = cellset.Cell(y,x,cid)
+            translatedSet.add(newCell)
         return translatedSet
 
     def setSpecies(self, sel):

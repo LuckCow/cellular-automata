@@ -3,12 +3,7 @@ Conway's game of life
 Author: Nick Collins
 Date: 3/16/2016
 
-
-Python version 3.4.3
-PyQt version 4.8.7 - Documentation: http://pyqt.sourceforge.net/Docs/PyQt4/classes.html
-
 Rules
-
     Any live cell with fewer than two live neighbours dies, as if caused by under-population.
     Any live cell with two or three live neighbours lives on to the next generation.
     Any live cell with more than three live neighbours dies, as if by over-population.
@@ -28,35 +23,27 @@ Board
 Generation Number
 Speed of animation
 
-TODO:
-Show generation number
-Mutations
-
-Known Bugs:
-
-
-User Feedback:
-A bit difficult to pick up on the controls without explanation
---> add labels for buttons and perhaps a help menu with some explanation about the game
-Could be a bit clearer about when the mouse is in erase or draw mode
-
-Addressed user feedback
-User expected right click to either pan or give a menu. (NOT DO NEXT GENERATION)
--->added right click mouse panning
 """
 
-from PyQt4 import Qt
+from PyQt5 import Qt
 import sys
 from lifeforms import Lifeforms
 from enum import IntEnum
-from random import random
+from collections import defaultdict
+import random
+from cellset import CellSet, Cell
 
-class Direc(IntEnum):
-    #Used for arrow key panning
-    up = Qt.Qt.Key_Up
-    down = Qt.Qt.Key_Down
-    right = Qt.Qt.Key_Right
-    left = Qt.Qt.Key_Left
+class Mode(IntEnum):
+    edit = 0
+    select = 1
+    place = 2
+
+class Edit(IntEnum):
+    toggle = 0
+    fillIn = 1
+    fillOver = 2
+    eraseAll = 3
+    eraseSelected = 4
         
         
 class GameOfLife(Qt.QWidget):
@@ -67,9 +54,10 @@ class GameOfLife(Qt.QWidget):
     def __init__(self):
         super(GameOfLife, self).__init__()
         self.mouseMode = self.mouseDrawMode
+        self.timer = Qt.QBasicTimer()
+        self.timerSpeed = 1000
         self.initUI()
 
-    zoo = Lifeforms()
         
     def initUI(self):
         self.sq = 30 # starting square size
@@ -92,58 +80,33 @@ class GameOfLife(Qt.QWidget):
         self.cellOffsetX = self.sq/2
         self.cellOffsetY = self.sq/2
         
-        self.genCount = 0
-        self.coords = set() #empty set of live cells
-        self.oldCoords = set() #previous set for static area elimination
-        self.olderCoords = set()
-        self.c = Qt.Qt.darkCyan
-        self.c2 = Qt.Qt.cyan
+        self.selectionColor = Qt.QColor(223, 145, 0, 100)
+        self.selectingColor = Qt.QColor(223, 145, 0, 64)
 
+        self.zoo = Lifeforms()
         self.lifeformOutline = self.zoo.setPoints
         self.defineRenderRegion()
+
+        self.cellSet = CellSet()
+        self.addCellType('Conway', 20000, [3, 2], [3])
+        self.selId = 0
 
         self.setMouseTracking(True)
 
         self.rightPressed = False
+        self.leftPressed = False
+        self.selection = (0, 0, 0, 0)
+        self.editMode = Edit.toggle
+        self.mousePosition = [0, 0]
 
-    def doGeneration(self):
-        #Moves the state to next generation
-        activeSet = set() #Set of all dead cells that could change (ie neighbors of living cells)
-        nextGen = set()
-        
-        for i in self.coords:# - self.oldCoords: #Create set of dead cells adjacent to live cells to calculate
-            activeSet.update(self.getNeighborSet(i))
-        activeSet.difference_update(self.coords) #Subtract live cells from neighbors
-        
-        for i in activeSet:
-            if self.countLiveNeighbors(i) == 3:
-                nextGen.add(i)
-                
-        for i in self.coords: #iterate through currently living cells
-            neighbours = self.countLiveNeighbors(i)
-            if neighbours >= 2 and neighbours <= 3:# and random() < 0.999:
-                nextGen.add(i)
-        self.oldCoords = self.coords
-        self.coords = nextGen.copy() #copy nextGen into current set
-        self.genCount +=1
-            
-
-    def getNeighborSet(self, coordPoint):
-        retSet = set()
-        for i in range(-1,2):
-            for j in range(-1,2):
-                p = (coordPoint[0]+i, coordPoint[1]+j)
-                retSet.add(p)
-        retSet.remove(coordPoint)
-        return retSet
-        
-    def countLiveNeighbors(self, point):
-        return len(self.coords.intersection(self.getNeighborSet(point)))
 
     def getIndex(self, coords):
         #Coords are (y, x)
         return ((coords[0] + self.sq - self.gridOffsetY) // self.sq,
                 (coords[1] + self.sq - self.gridOffsetX) // self.sq) 
+
+    def setMouseMode(self, mode):
+        self.mouseMode = mode
         
     def mousePressEvent(self, e):
         row, col = self.getIndex((e.y(),e.x()))
@@ -153,18 +116,32 @@ class GameOfLife(Qt.QWidget):
             self.rightPressed = True
             self.lastMouseX = e.x()
             self.lastMouseY = e.y()
+        elif e.button() == 1: #Left mouse button: for selecting
+            self.leftPressed = True
+            self.lastMouseX = e.x()
+            self.lastMouseY = e.y()
 
         
     def mouseReleaseEvent(self, e):
         #print('Mouse Pressed:','Button:',e.button(),'x',e.x(),'y',e.y())
         row, col = self.getIndex((e.y(),e.x()))
         if e.button() == 1:
-            if self.mouseMode == self.mouseDrawMode:
-                self.mouseDraw(row, col)
-            elif self.mouseMode == self.mouseEraseMode:
-                self.mouseErase(row, col)
-            else:
+            if self.mouseMode == Mode.edit:
+                if self.editMode == Edit.toggle:
+                    self.mouseToggle(row, col)
+                if self.editMode == Edit.fillIn:
+                    self.mouseFill(row, col, False)
+                elif self.editMode == Edit.fillOver:
+                    self.mouseFill(row, col, True)
+                elif self.editMode == Edit.eraseAll:
+                    self.mouseErase(row, col)
+                elif self.editMode == Edit.eraseSelected:
+                    self.mouseErase(row, col, self.selId)
+            elif self.mouseMode == Mode.place:
                 self.mousePlace(row, col)
+            elif self.mouseMode == Mode.select:
+                self.mouseSelect(row, col)
+            self.leftPressed = False
         elif e.button() == 2:
             self.rightPressed = False
         else:
@@ -173,39 +150,54 @@ class GameOfLife(Qt.QWidget):
 
     def mouseMoveEvent(self, e):
         row, col = self.getIndex((e.y(),e.x()))
-        
-        if self.mouseMode == self.mousePlaceMode:
-            self.lifeformOutline = self.zoo.getLifeformSet(row, col, 0, 0)
-            self.update()
+        self.mousePosition = [row, col]
+        self.update()
         if self.rightPressed: #Pan
             dx = e.x() - self.lastMouseX
             dy = e.y() - self.lastMouseY
             self.panSquares(dx, dy)
             self.lastMouseX = e.x()
             self.lastMouseY = e.y()
+
+    def mouseToggle(self, row, col):
+        for i in range(min(self.pressRow, row), max(self.pressRow, row)+1):
+            for j in range(min(self.pressCol, col), max(self.pressCol, col)+1):
+                p = (i+self.renderY,j+self.renderX)
+                self.cellSet.toggle_cell(p, self.selId)
             
-    def mouseDraw(self, row, col):
+    def mouseFill(self, row, col, override):
         for i in range(min(self.pressRow, row), max(self.pressRow, row)+1):
             for j in range(min(self.pressCol, col), max(self.pressCol, col)+1):
                 p = (i+self.renderY,j+self.renderX)
-                if p in self.coords:
-                    self.coords.remove(p)
-                else:
-                    self.coords.add(p)
+                self.cellSet.add_cell(p, self.selId, override)
                         
-    def mouseErase(self, row, col):
+    def mouseErase(self, row, col, cid=None):
         for i in range(min(self.pressRow, row), max(self.pressRow, row)+1):
             for j in range(min(self.pressCol, col), max(self.pressCol, col)+1):
                 p = (i+self.renderY,j+self.renderX)
-                if p in self.coords:
-                    self.coords.remove(p)
+                self.cellSet.remove_cell(p, cid) #Change to only delete selected type
 
     def mousePlace(self, row, col):
-        form = self.zoo.getLifeformSet(row, col, self.renderY, self.renderX)
-        self.coords.update(form)
+        form = self.zoo.getLifeformSet(row, col, self.renderY, self.renderX, self.selId)
+        for cell in form:
+            self.cellSet.cells.discard(cell)
+            self.cellSet.cells.add(cell)
+
+    def mouseSelect(self, row, col): #TODO: keep selection in same place in space
+        self.selection = (min(self.pressRow, row) + self.renderY, max(self.pressRow, row)+1 + self.renderY,
+                          min(self.pressCol, col) + self.renderX, max(self.pressCol, col)+1 + self.renderX)
+
+    def copySelection(self):
+        sel = set()
+        for cell in self.cellSet.cells:
+            if self.selection[0] <= cell.y < self.selection[1] \
+               and self.selection[2] <= cell.x < self.selection[3]:
+                translatedCell = Cell(cell.y - self.selection[0], cell.x - self.selection[2], cell.cid)
+                sel.add(translatedCell)
+        self.zoo.species['Clipboard'] = sel
         
     def wheelEvent(self, e):
-        if e.delta() > 0:
+        if e.angleDelta().y() > 0:
             self.zoom(True)
         else:
             self.zoom(False)
@@ -213,12 +205,12 @@ class GameOfLife(Qt.QWidget):
 
     def keyPressEvent(self, e):
         if e.key() == Qt.Qt.Key_Space:
-            self.doGeneration()
+            self.cellSet.doGeneration()
             self.update()
         if e.key() in list(Direc):
             self.panBoard(e.key())
 
-    def panSquares(self, dx, dy): #Right click
+    def panSquares(self, dx, dy): #Right click panning
         #sets offset of squares relative to screen given a dx and dy amount
         self.gridOffsetX -= dx
         self.gridOffsetY -= dy
@@ -227,63 +219,64 @@ class GameOfLife(Qt.QWidget):
 
         #Grid offset: moves grid relative to screen
         if self.gridOffsetX > self.sq or self.gridOffsetX < 0:
-            #self.renderX += self.gridOffsetX // self.sq
             self.gridOffsetX %= self.sq
         if self.gridOffsetY > self.sq or self.gridOffsetY < 0:
-            #self.renderY += self.gridOffsetY // self.sq
             self.gridOffsetY %= self.sq
 
         #Cell offset: moves cells relative to grid (midpoint offset for smoother panning)
         if self.cellOffsetX > self.sq or self.cellOffsetX < 0:
-            self.renderX += self.cellOffsetX // self.sq
+            self.renderX += int(self.cellOffsetX // self.sq)
             self.cellOffsetX %= self.sq
         if self.cellOffsetY > self.sq or self.cellOffsetY < 0:
-            self.renderY += self.cellOffsetY // self.sq
+            self.renderY += int(self.cellOffsetY // self.sq)
             self.cellOffsetY %= self.sq
 
         self.defineRenderRegion()
-        self.update()
-        
-
-    def panBoard(self, direc, scale=None): #arrow keys
-        #Older function: could use panSquares for better functionality
-        if not scale:
-            scale = int(1/float(self.sq * 0.01)) #No particular logic behind this formula
-        ###global Direc
-        if direc == Direc.up:
-            self.renderY -= scale
-        elif direc == Direc.down:
-            self.renderY += scale
-        elif direc == Direc.right:
-            self.renderX += scale
-        elif direc == Direc.left:
-            self.renderX -= scale
         self.update()
             
     def paintEvent(self, e):
         qp = Qt.QPainter()
         qp.begin(self)
         self.drawBoard(qp)
+        self.drawMode(qp)
         qp.end()
 
     def drawBoard(self, qp):
         ##Draw all rectangles (grid)
-        #fill living ones with black
-        
+        #fill living ones with corresponding color
         for i in range(0, self.renderWidth):
             for j in range(0, self.renderHeight):
                 qp.drawRect(self.renderRects[j][i])
-                if (j+self.renderY, i+self.renderX) in self.coords:
-                    #might be more efficient to iterate over set instead of having this if statement^
-                    qp.fillRect(self.renderRects[j][i], self.c)
+        for c in self.cellSet.cells:
+            relY, relX = int(c.y - self.renderY), int(c.x - self.renderX)
+            if 0 <= relY < self.renderHeight and 0 <= relX < self.renderWidth:
+                qp.fillRect(self.renderRects[relY][relX],
+                            Qt.QColor(self.cellSet.types[c.cid]['color']))
 
-        if self.mouseMode == self.mousePlaceMode:
-            for coords in self.lifeformOutline:
-                if coords[0] >= 0 and coords[0] < self.renderHeight and coords[1] >= 0 and coords[1] < self.renderWidth:
-                    qp.fillRect(self.renderRects[coords[0]][coords[1]], self.c2)
-
-        #Draw mouse placing lifeform outline
-            
+    def drawMode(self, qp):
+        #Draw placement or selection indicators according to mouse mode
+        if self.mouseMode == Mode.place:
+            selColor = Qt.QColor()
+            form = self.zoo.getLifeformSet(self.mousePosition[0], self.mousePosition[1], 0, 0, self.selId)
+            for point in form:
+                selColor.setRgb(self.cellSet.types[point.cid]['color'])
+                selColor.setAlpha(155)
+                if 0 <= point[1] < self.renderWidth and 0 <= point[0] < self.renderHeight:
+                    qp.fillRect(self.renderRects[point[0]][point[1]], selColor)
+        elif self.mouseMode == Mode.select:
+            if not self.leftPressed:
+                y0, y1 = self.selection[0] - self.renderY, self.selection[1] - self.renderY
+                x0, x1 = self.selection[2] - self.renderX, self.selection[3] - self.renderX
+                for i in range(y0, y1):
+                    for j in range(x0, x1):
+                        if 0 <= i < self.renderHeight and 0 <= j < self.renderWidth:
+                            qp.fillRect(self.renderRects[i][j], self.selectionColor)
+            else:
+                for i in range(min(self.pressRow, self.mousePosition[0]),
+                               max(self.pressRow, self.mousePosition[0]) + 1):
+                    for j in range(min(self.pressCol, self.mousePosition[1]),
+                                   max(self.pressCol, self.mousePosition[1]) + 1):
+                        qp.fillRect(self.renderRects[i][j], self.selectingColor)
 
     def zoom(self, zoomIn):
         #Zoom changes the size of the rendered squares: smaller squares means more are rendered
@@ -311,14 +304,42 @@ class GameOfLife(Qt.QWidget):
                 self.renderRects[j][i].translate(self.gridOffsetX - self.sq, self.gridOffsetY - self.sq)
         
     def timerEvent(self, e):
-        self.doGeneration()
+        self.cellSet.doGeneration()
         self.update()
-       
+
+    def changeTimerSpeed(self, val):
+        self.timerSpeed = val
+        if self.timer.isActive():
+            self.stopTimer()
+            self.startTimer()
+
+    def toggleTimer(self):
+        if self.timer.isActive():
+            self.stopTimer()
+        else:
+            self.startTimer()
+        
+    def startTimer(self):
+        #timer sends timerEvent every msTic amount of milliseconds
+        #timer sends events to GoL widget (which is self)
+        self.timer.start(self.timerSpeed, self)
+
+    def stopTimer(self):
+        self.timer.stop()
                 
     def resizeEvent(self, e):
         self.defineRenderRegion()
 
     def resetGame(self):
-        self.genCount = 0
-        self.coords = set()
+        self.stopTimer()
+        self.cellSet.reset()
         self.update()
+
+    def setCellType(self, sel):
+        self.selId = sel
+
+    def addCellType(self, name=None, color=None, survive=None, spawn=None):
+        return self.cellSet.add_new_type(name, color, survive, spawn)
+
+    def delCellType(self, sel):
+        self.cellSet.del_type(sel)
